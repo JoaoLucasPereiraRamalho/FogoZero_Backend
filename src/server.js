@@ -16,6 +16,9 @@ app.use("/api/reportes", reporteRoutes);
 
 const PORT = process.env.PORT || 3000;
 
+const errorHandler = require("./middlewares/errorHandler");
+app.use(errorHandler);
+
 app.listen(PORT, () => {
   console.log(`Servidor rodando na porta ${PORT}`);
   console.log(`Acesse: http://localhost:${PORT}/ping`);
