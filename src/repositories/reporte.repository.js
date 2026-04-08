@@ -79,6 +79,26 @@ async function findUsuarioById(id) {
   });
 }
 
+// Aliases de compatibilidade com implementacao anterior.
+async function criar(dados) {
+  return prisma.reporte.create({
+    data: dados,
+  });
+}
+
+async function buscarTodos() {
+  return prisma.reporte.findMany({
+    include: {
+      usuario: {
+        select: {
+          nome: true,
+          email: true,
+        },
+      },
+    },
+  });
+}
+
 module.exports = {
   createReporte,
   findById,
@@ -88,4 +108,6 @@ module.exports = {
   findStatusIaById,
   findStatusAdminById,
   findUsuarioById,
+  criar,
+  buscarTodos,
 };

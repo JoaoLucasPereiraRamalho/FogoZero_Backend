@@ -151,8 +151,8 @@ async function create(input) {
       latitude: data.latitude,
       longitude: data.longitude,
       imagem_url: data.imagem_url,
-      id_status_analise_ia: data.id_status_analise_ia,
-      id_status_analise_admin: data.id_status_analise_admin,
+      id_status_analise_ia: data.id_status_analise_ia ?? 1,
+      id_status_analise_admin: data.id_status_analise_admin ?? 1,
     });
 
     return toPublicReporte(reporte);
@@ -257,6 +257,21 @@ async function forwardToFireDepartment(params, input) {
   }
 }
 
+// Aliases de compatibilidade com implementacao anterior.
+async function registrarNovoReporte(dados) {
+  const reporteParaSalvar = {
+    ...dados,
+    id_status_analise_ia: dados.id_status_analise_ia ?? 1,
+    id_status_analise_admin: dados.id_status_analise_admin ?? 1,
+  };
+
+  return reporteRepository.criar(reporteParaSalvar);
+}
+
+async function listarTodos() {
+  return reporteRepository.buscarTodos();
+}
+
 module.exports = {
   create,
   listAll,
@@ -264,4 +279,6 @@ module.exports = {
   getById,
   updateAdminStatus,
   forwardToFireDepartment,
+  registrarNovoReporte,
+  listarTodos,
 };
