@@ -1,0 +1,619 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "FogoZero Backend API",
+    "version": "1.0.0",
+    "description": "Documentacao da API do modulo de reportes"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:3000",
+      "description": "Ambiente local"
+    }
+  ],
+  "tags": [
+    {
+      "name": "Health",
+      "description": "Endpoints de status da API"
+    },
+    {
+      "name": "Reportes",
+      "description": "Endpoints do modulo de reporte comunitario"
+    }
+  ],
+  "paths": {
+    "/ping": {
+      "get": {
+        "tags": [
+          "Health"
+        ],
+        "summary": "Verifica se a API esta online",
+        "responses": {
+          "200": {
+            "description": "API online",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "mensagem": {
+                      "type": "string"
+                    },
+                    "status": {
+                      "type": "string",
+                      "example": "online"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/reportes": {
+      "post": {
+        "tags": [
+          "Reportes"
+        ],
+        "summary": "Cria um novo reporte",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateReporteInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Reporte criado com sucesso",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "reporte": {
+                      "$ref": "#/components/schemas/Reporte"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "Reportes"
+        ],
+        "summary": "Lista reportes com filtros e paginacao",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20
+            }
+          },
+          {
+            "name": "usuario_id",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1
+            }
+          },
+          {
+            "name": "id_status_analise_ia",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1
+            }
+          },
+          {
+            "name": "id_status_analise_admin",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Lista paginada de reportes",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PagedReporteResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          }
+        }
+      }
+    },
+    "/api/reportes/usuario/{usuario_id}": {
+      "get": {
+        "tags": [
+          "Reportes"
+        ],
+        "summary": "Lista reportes por usuario",
+        "parameters": [
+          {
+            "name": "usuario_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20
+            }
+          },
+          {
+            "name": "id_status_analise_ia",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1
+            }
+          },
+          {
+            "name": "id_status_analise_admin",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Lista paginada de reportes do usuario",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PagedReporteResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      }
+    },
+    "/api/reportes/{id}": {
+      "get": {
+        "tags": [
+          "Reportes"
+        ],
+        "summary": "Busca um reporte por id",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Detalhes do reporte",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "reporte": {
+                      "$ref": "#/components/schemas/Reporte"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      }
+    },
+    "/api/reportes/{id}/status-admin": {
+      "patch": {
+        "tags": [
+          "Reportes"
+        ],
+        "summary": "Atualiza o status de analise administrativa",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateStatusAdminInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Status atualizado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "reporte": {
+                      "$ref": "#/components/schemas/Reporte"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      }
+    },
+    "/api/reportes/{id}/encaminhar-bombeiros": {
+      "patch": {
+        "tags": [
+          "Reportes"
+        ],
+        "summary": "Encaminha reporte para fluxo administrativo",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ForwardReporteInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Reporte encaminhado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "mensagem": {
+                      "type": "string"
+                    },
+                    "reporte": {
+                      "$ref": "#/components/schemas/Reporte"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "CreateReporteInput": {
+        "type": "object",
+        "required": [
+          "usuario_id",
+          "assunto",
+          "latitude",
+          "longitude",
+          "imagem_url"
+        ],
+        "properties": {
+          "usuario_id": {
+            "type": "integer",
+            "minimum": 1,
+            "example": 1
+          },
+          "assunto": {
+            "type": "string",
+            "minLength": 5,
+            "maxLength": 1000,
+            "example": "Foco de incendio proximo a area de mata"
+          },
+          "latitude": {
+            "type": "number",
+            "minimum": -90,
+            "maximum": 90,
+            "example": -19.9245
+          },
+          "longitude": {
+            "type": "number",
+            "minimum": -180,
+            "maximum": 180,
+            "example": -43.9352
+          },
+          "imagem_url": {
+            "type": "string",
+            "format": "uri",
+            "example": "https://cdn.exemplo.com/imagens/reporte-123.jpg"
+          },
+          "id_status_analise_ia": {
+            "type": "integer",
+            "minimum": 1,
+            "example": 1
+          },
+          "id_status_analise_admin": {
+            "type": "integer",
+            "minimum": 1,
+            "example": 2
+          }
+        }
+      },
+      "UpdateStatusAdminInput": {
+        "type": "object",
+        "required": [
+          "id_status_analise_admin"
+        ],
+        "properties": {
+          "id_status_analise_admin": {
+            "type": "integer",
+            "minimum": 1,
+            "example": 3
+          }
+        }
+      },
+      "ForwardReporteInput": {
+        "type": "object",
+        "required": [
+          "id_status_analise_admin"
+        ],
+        "properties": {
+          "id_status_analise_admin": {
+            "type": "integer",
+            "minimum": 1,
+            "example": 4
+          }
+        }
+      },
+      "Reporte": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "usuario_id": {
+            "type": "integer"
+          },
+          "assunto": {
+            "type": "string"
+          },
+          "latitude": {
+            "type": "number"
+          },
+          "longitude": {
+            "type": "number"
+          },
+          "imagem_url": {
+            "type": "string",
+            "format": "uri"
+          },
+          "id_status_analise_ia": {
+            "type": "integer",
+            "nullable": true
+          },
+          "id_status_analise_admin": {
+            "type": "integer",
+            "nullable": true
+          },
+          "data_reporte": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "usuario": {
+            "$ref": "#/components/schemas/UsuarioResumo"
+          },
+          "status_analise_ia": {
+            "$ref": "#/components/schemas/StatusResumo"
+          },
+          "status_analise_admin": {
+            "$ref": "#/components/schemas/StatusResumo"
+          }
+        }
+      },
+      "UsuarioResumo": {
+        "type": "object",
+        "nullable": true,
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "nome": {
+            "type": "string",
+            "nullable": true
+          },
+          "email": {
+            "type": "string",
+            "format": "email"
+          },
+          "tipo": {
+            "type": "string",
+            "nullable": true
+          },
+          "id_regiao": {
+            "type": "integer",
+            "nullable": true
+          }
+        }
+      },
+      "StatusResumo": {
+        "type": "object",
+        "nullable": true,
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "descricao": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "PagedReporteResponse": {
+        "type": "object",
+        "properties": {
+          "dados": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Reporte"
+            }
+          },
+          "meta": {
+            "type": "object",
+            "properties": {
+              "pagina": {
+                "type": "integer"
+              },
+              "limite": {
+                "type": "integer"
+              },
+              "total": {
+                "type": "integer"
+              },
+              "total_paginas": {
+                "type": "integer"
+              }
+            }
+          }
+        }
+      },
+      "ErrorResponse": {
+        "type": "object",
+        "properties": {
+          "mensagem": {
+            "type": "string"
+          },
+          "detalhes": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "campo": {
+                  "type": "string"
+                },
+                "mensagem": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "responses": {
+      "BadRequest": {
+        "description": "Requisicao invalida",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse"
+            }
+          }
+        }
+      },
+      "NotFound": {
+        "description": "Recurso nao encontrado",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse"
+            }
+          }
+        }
+      }
+    }
+  }
+}

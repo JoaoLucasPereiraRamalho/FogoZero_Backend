@@ -11,6 +11,7 @@ model Usuario {
   id            Int       @id @default(autoincrement())
   nome          String?
   email         String    @unique
+  senha_hash    String
   tipo          String?
   id_regiao     Int?
   data_cadastro DateTime? @default(now())
