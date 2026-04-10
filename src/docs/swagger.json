@@ -3,7 +3,7 @@
   "info": {
     "title": "FogoZero Backend API",
     "version": "1.0.0",
-    "description": "Documentacao da API do modulo de reportes"
+    "description": "Documentacao da API do sistema back-end do FogoZero"
   },
   "servers": [
     {
@@ -19,6 +19,10 @@
     {
       "name": "Reportes",
       "description": "Endpoints do modulo de reporte comunitario"
+    },
+    {
+      "name": "Educativo",
+      "description": "Endpoints do modulo educativo (noticias e glossario)"
     }
   ],
   "paths": {
@@ -378,6 +382,502 @@
           }
         }
       }
+    },
+    "/api/educativo/noticias": {
+      "post": {
+        "tags": [
+          "Educativo"
+        ],
+        "summary": "Cadastra uma nova noticia",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateNoticiaInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Noticia cadastrada com sucesso",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "noticia": {
+                      "$ref": "#/components/schemas/Noticia"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "Educativo"
+        ],
+        "summary": "Lista noticias com filtros e paginacao",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20
+            }
+          },
+          {
+            "name": "q",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Lista paginada de noticias",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PagedNoticiaResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          }
+        }
+      }
+    },
+    "/api/educativo/noticias/{id}": {
+      "get": {
+        "tags": [
+          "Educativo"
+        ],
+        "summary": "Busca noticia por id",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Detalhes da noticia",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "noticia": {
+                      "$ref": "#/components/schemas/Noticia"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "Educativo"
+        ],
+        "summary": "Atualiza noticia por id",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateNoticiaInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Noticia atualizada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "noticia": {
+                      "$ref": "#/components/schemas/Noticia"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Educativo"
+        ],
+        "summary": "Remove noticia por id",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Noticia removida",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "mensagem": {
+                      "type": "string"
+                    },
+                    "noticia": {
+                      "$ref": "#/components/schemas/Noticia"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      }
+    },
+    "/api/educativo/glossario": {
+      "post": {
+        "tags": [
+          "Educativo"
+        ],
+        "summary": "Cadastra termo no glossario",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateGlossarioInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Termo cadastrado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "glossario": {
+                      "$ref": "#/components/schemas/Glossario"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "Educativo"
+        ],
+        "summary": "Lista termos do glossario com filtros e paginacao",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20
+            }
+          },
+          {
+            "name": "q",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Lista paginada do glossario",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PagedGlossarioResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          }
+        }
+      }
+    },
+    "/api/educativo/glossario/termo/{termo}": {
+      "get": {
+        "tags": [
+          "Educativo"
+        ],
+        "summary": "Busca termos do glossario por texto",
+        "parameters": [
+          {
+            "name": "termo",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Termos encontrados",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "dados": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Glossario"
+                      }
+                    },
+                    "meta": {
+                      "type": "object",
+                      "properties": {
+                        "total": {
+                          "type": "integer"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          }
+        }
+      }
+    },
+    "/api/educativo/glossario/{id}": {
+      "get": {
+        "tags": [
+          "Educativo"
+        ],
+        "summary": "Busca termo do glossario por id",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Detalhes do termo",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "glossario": {
+                      "$ref": "#/components/schemas/Glossario"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "Educativo"
+        ],
+        "summary": "Atualiza termo do glossario por id",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateGlossarioInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Termo atualizado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "glossario": {
+                      "$ref": "#/components/schemas/Glossario"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Educativo"
+        ],
+        "summary": "Remove termo do glossario por id",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Termo removido",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "mensagem": {
+                      "type": "string"
+                    },
+                    "glossario": {
+                      "$ref": "#/components/schemas/Glossario"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      }
     }
   },
   "components": {
@@ -587,6 +1087,214 @@
                 "mensagem": {
                   "type": "string"
                 }
+              }
+            }
+          }
+        }
+      },
+      "CreateNoticiaInput": {
+        "type": "object",
+        "required": [
+          "titulo",
+          "link_origem",
+          "adm_id"
+        ],
+        "properties": {
+          "titulo": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 200,
+            "example": "Queimadas em alta no norte de MG"
+          },
+          "link_origem": {
+            "type": "string",
+            "format": "uri",
+            "example": "https://site-noticias.com/materia/123"
+          },
+          "img_destaque_url": {
+            "type": "string",
+            "format": "uri",
+            "nullable": true
+          },
+          "adm_id": {
+            "type": "integer",
+            "minimum": 1,
+            "example": 2
+          }
+        }
+      },
+      "UpdateNoticiaInput": {
+        "type": "object",
+        "properties": {
+          "titulo": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 200
+          },
+          "link_origem": {
+            "type": "string",
+            "format": "uri"
+          },
+          "img_destaque_url": {
+            "type": "string",
+            "format": "uri"
+          },
+          "adm_id": {
+            "type": "integer",
+            "minimum": 1
+          }
+        }
+      },
+      "Noticia": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "titulo": {
+            "type": "string"
+          },
+          "link_origem": {
+            "type": "string",
+            "format": "uri"
+          },
+          "img_destaque_url": {
+            "type": "string",
+            "format": "uri",
+            "nullable": true
+          },
+          "adm_id": {
+            "type": "integer"
+          },
+          "data_publicacao": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "administrador": {
+            "type": "object",
+            "nullable": true,
+            "properties": {
+              "id": {
+                "type": "integer"
+              },
+              "nome": {
+                "type": "string",
+                "nullable": true
+              },
+              "email": {
+                "type": "string",
+                "format": "email"
+              },
+              "tipo": {
+                "type": "string",
+                "nullable": true
+              }
+            }
+          }
+        }
+      },
+      "PagedNoticiaResponse": {
+        "type": "object",
+        "properties": {
+          "dados": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Noticia"
+            }
+          },
+          "meta": {
+            "type": "object",
+            "properties": {
+              "pagina": {
+                "type": "integer"
+              },
+              "limite": {
+                "type": "integer"
+              },
+              "total": {
+                "type": "integer"
+              },
+              "total_paginas": {
+                "type": "integer"
+              }
+            }
+          }
+        }
+      },
+      "CreateGlossarioInput": {
+        "type": "object",
+        "required": [
+          "termo",
+          "definicao"
+        ],
+        "properties": {
+          "termo": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 120,
+            "example": "Foco de incendio"
+          },
+          "definicao": {
+            "type": "string",
+            "minLength": 5,
+            "maxLength": 3000,
+            "example": "Registro detectado por satelite indicando possivel ocorrencia de fogo."
+          }
+        }
+      },
+      "UpdateGlossarioInput": {
+        "type": "object",
+        "properties": {
+          "termo": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 120
+          },
+          "definicao": {
+            "type": "string",
+            "minLength": 5,
+            "maxLength": 3000
+          }
+        }
+      },
+      "Glossario": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "termo": {
+            "type": "string"
+          },
+          "definicao": {
+            "type": "string"
+          }
+        }
+      },
+      "PagedGlossarioResponse": {
+        "type": "object",
+        "properties": {
+          "dados": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Glossario"
+            }
+          },
+          "meta": {
+            "type": "object",
+            "properties": {
+              "pagina": {
+                "type": "integer"
+              },
+              "limite": {
+                "type": "integer"
+              },
+              "total": {
+                "type": "integer"
+              },
+              "total_paginas": {
+                "type": "integer"
               }
             }
           }
