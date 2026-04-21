@@ -1,10 +1,6 @@
 const { z } = require("zod");
 
 const createReporteSchema = z.object({
-  usuario_id: z.coerce
-    .number()
-    .int()
-    .positive("Id do usuario informado e invalido."),
   assunto: z
     .string()
     .trim()

@@ -138,15 +138,19 @@ async function listWithFilters(schema, query, extraWhere = {}) {
   );
 }
 
-async function create(input) {
+async function create(input, authenticatedUserId) {
   try {
+    if (!authenticatedUserId) {
+      throw new AppError("Usuario nao autenticado.", 401);
+    }
+
     const data = createReporteSchema.parse(input);
 
-    await ensureUserExists(data.usuario_id);
+    await ensureUserExists(authenticatedUserId);
     await validateStatusIds(data);
 
     const reporte = await reporteRepository.createReporte({
-      usuario_id: data.usuario_id,
+      usuario_id: authenticatedUserId,
       assunto: data.assunto,
       latitude: data.latitude,
       longitude: data.longitude,
@@ -181,9 +185,17 @@ async function listAll(query) {
   }
 }
 
-async function listByUsuario(params, query) {
+async function listByUsuario(params, query, authenticatedUserId) {
   try {
+    if (!authenticatedUserId) {
+      throw new AppError("Usuario nao autenticado.", 401);
+    }
+
     const { usuario_id } = usuarioIdParamSchema.parse(params);
+
+    if (authenticatedUserId !== usuario_id) {
+      throw new AppError("Acesso negado para este recurso.", 403);
+    }
 
     await ensureUserExists(usuario_id);
 
