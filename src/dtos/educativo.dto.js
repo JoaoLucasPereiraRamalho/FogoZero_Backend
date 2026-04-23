@@ -33,7 +33,6 @@ const createNoticiaSchema = z.object({
     .trim()
     .url("URL da imagem de destaque invalida.")
     .optional(),
-  adm_id: z.coerce.number().int().positive("Id do administrador invalido."),
 });
 
 const updateNoticiaSchema = createNoticiaSchema

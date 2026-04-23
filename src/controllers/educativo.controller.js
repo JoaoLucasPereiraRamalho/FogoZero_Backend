@@ -2,7 +2,10 @@ const educativoService = require("../services/educativo.service");
 
 async function createNoticia(req, res, next) {
   try {
-    const noticia = await educativoService.createNoticia(req.body);
+    const noticia = await educativoService.createNoticia(
+      req.body,
+      req.user.userId,
+    );
     return res.status(201).json({ noticia });
   } catch (error) {
     return next(error);

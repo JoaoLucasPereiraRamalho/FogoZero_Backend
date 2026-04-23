@@ -56,19 +56,11 @@ function toPublicGlossario(item) {
   };
 }
 
-async function ensureAdminUser(admId) {
-  const usuario = await educativoRepository.findUsuarioById(admId);
+async function ensureUsuarioExists(usuarioId) {
+  const usuario = await educativoRepository.findUsuarioById(usuarioId);
 
   if (!usuario) {
     throw new AppError("Administrador nao encontrado.", 404);
-  }
-
-  const tipo = String(usuario.tipo || "").toLowerCase();
-  if (tipo !== "administrador") {
-    throw new AppError(
-      "Usuario informado nao possui perfil de administrador.",
-      400,
-    );
   }
 }
 
@@ -92,13 +84,20 @@ async function ensureGlossarioExists(id) {
   return item;
 }
 
-async function createNoticia(input) {
+async function createNoticia(input, authenticatedAdminId) {
   try {
+    if (!authenticatedAdminId) {
+      throw new AppError("Usuario nao autenticado.", 401);
+    }
+
     const data = createNoticiaSchema.parse(input);
 
-    await ensureAdminUser(data.adm_id);
+    await ensureUsuarioExists(authenticatedAdminId);
 
-    const noticia = await educativoRepository.createNoticia(data);
+    const noticia = await educativoRepository.createNoticia({
+      ...data,
+      adm_id: authenticatedAdminId,
+    });
     return toPublicNoticia(noticia);
   } catch (error) {
     if (error instanceof ZodError) {
@@ -174,10 +173,6 @@ async function updateNoticia(params, input) {
     const data = updateNoticiaSchema.parse(input);
 
     await ensureNoticiaExists(id);
-
-    if (data.adm_id) {
-      await ensureAdminUser(data.adm_id);
-    }
 
     const noticia = await educativoRepository.updateNoticiaById(id, data);
     return toPublicNoticia(noticia);
