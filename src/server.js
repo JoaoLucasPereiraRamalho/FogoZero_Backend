@@ -6,6 +6,7 @@ const authRoutes = require("./routes/auth.routes");
 const reporteRoutes = require("./routes/reporte.routes");
 const educativoRoutes = require("./routes/educativo.routes");
 const municipioRoutes = require('./routes/municipios.routes');
+const graficosRoutes = require('./routes/graficos.routes');
 const errorHandler = require("./middlewares/errorHandler");
 const setupSwagger = require("./swagger");
 
@@ -25,6 +26,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/reportes", reporteRoutes);
 app.use("/api/educativo", educativoRoutes);
 app.use("/api/municipios", municipioRoutes);
+app.use('/api/graficos', graficosRoutes);
 setupSwagger(app);
 app.use(errorHandler);
 
