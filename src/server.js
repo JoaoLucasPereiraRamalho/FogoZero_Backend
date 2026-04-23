@@ -4,6 +4,9 @@ const express = require("express");
 const cors = require("cors");
 const reporteRoutes = require("./routes/reporte.routes");
 const educativoRoutes = require("./routes/educativo.routes");
+const queimadaRoutes = require("./routes/queimada.routes");
+const noticiaRoutes = require("./routes/noticia.routes");
+const monitoramentoRoutes = require("./routes/monitoramento.routes");
 const errorHandler = require("./middlewares/errorHandler");
 const setupSwagger = require("./swagger");
 
@@ -21,6 +24,9 @@ app.get("/ping", (req, res) => {
 
 app.use("/api/reportes", reporteRoutes);
 app.use("/api/educativo", educativoRoutes);
+app.use("/api/queimadas", queimadaRoutes);
+app.use("/api/noticias", noticiaRoutes);
+app.use("/api/monitoramentos", monitoramentoRoutes);
 setupSwagger(app);
 app.use(errorHandler);
 

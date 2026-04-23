@@ -58,17 +58,6 @@ model RegistroQueimada {
   @@map("registro_queimada")
 }
 
-model Noticia {
-  id               Int       @id @default(autoincrement())
-  titulo           String
-  link_origem      String
-  img_destaque_url String?
-  adm_id           Int
-  data_publicacao  DateTime? @default(now())
-  administrador    Usuario   @relation(fields: [adm_id], references: [id])
-
-  @@map("noticia")
-}
 
 model Glossario {
   id        Int    @id @default(autoincrement())
@@ -100,4 +89,39 @@ model TipoRegiao {
   regioes   Regiao[]
 
   @@map("tipo_regiao")
+}
+
+enum StatusNoticia {
+  PENDENTE   // Aguardando análise do ADM
+  APROVADA   // Visível no portal para usuários
+  REJEITADA  // Descartada pelo ADM
+}
+
+model Noticia {
+  id               Int           @id @default(autoincrement())
+  titulo           String
+  slug             String        @unique
+  conteudo         String        @db.Text
+  imagem_capa      String?
+  fonte_url        String?       
+  status           StatusNoticia @default(PENDENTE)
+  data_importacao  DateTime      @default(now())
+  data_publicacao  DateTime?
+  autor_id         Int
+  autor            Usuario       @relation(fields: [autor_id], references: [id])
+
+  @@map("noticias")
+}
+
+model Monitoramento {
+  id          Int      @id @default(autoincrement())
+  usuarioId   Int
+  cidade      String   // Nome da cidade (ex: "Lagoa da Prata")
+  estado      String   @default("MG")
+  notificar   Boolean  @default(true)
+  createdAt   DateTime @default(now())
+
+  usuario     Usuario  @relation(fields: [usuarioId], references: [id])
+
+  @@unique([usuarioId, cidade]) // Evita duplicados para o mesmo usuário
 }
