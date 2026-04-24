@@ -34,7 +34,45 @@ async function ranking(req, res, next) {
   }
 }
 
+async function estatisticasImri(req, res, next) {
+  try {
+    const resultado = await municipioService.estatisticasImri();
+    return res.status(200).json(resultado);
+  } catch (error) {
+    if (error.statusCode) return next(error);
+    return next(new AppError("Erro ao buscar estatisticas IMRI.", 500));
+  }
+}
+
+async function rankingImri(req, res, next) {
+  try {
+    const limit = Math.min(Math.max(Number(req.query.limit) || 10, 1), 853);
+    const resultado = await municipioService.rankingImri(limit);
+    return res.status(200).json(resultado);
+  } catch (error) {
+    if (error.statusCode) return next(error);
+    return next(new AppError("Erro ao gerar ranking IMRI.", 500));
+  }
+}
+
+async function evolucaoHistorica(req, res, next) {
+  try {
+    const { municipio } = req.params;
+    const resultado = await municipioService.evolucaoHistorica(municipio);
+    if (!resultado) {
+      return next(new AppError("Municipio nao encontrado.", 404));
+    }
+    return res.status(200).json(resultado);
+  } catch (error) {
+    if (error.statusCode) return next(error);
+    return next(new AppError("Erro ao buscar evolucao historica.", 500));
+  }
+}
+
 module.exports = {
   listar,
   ranking,
+  estatisticasImri,
+  rankingImri,
+  evolucaoHistorica,
 };
