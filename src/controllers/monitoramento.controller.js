@@ -5,7 +5,7 @@ const monitoramentoController = {
   async store(req, res) {
     try {
       const { cidade, estado } = req.body;
-      const usuarioId = req.user.id; // Assumindo que o seu middleware de auth coloca o user aqui
+      const usuarioId = req.user.userId;
 
       if (!cidade) {
         return res
@@ -31,7 +31,7 @@ const monitoramentoController = {
   // Lista as cidades que o utilizador logado segue
   async index(req, res) {
     try {
-      const usuarioId = req.user.id;
+      const usuarioId = req.user.userId;
       const cidades = await monitoramentoRepository.listarPorUsuario(usuarioId);
       return res.json(cidades);
     } catch (error) {
@@ -43,8 +43,7 @@ const monitoramentoController = {
   async delete(req, res) {
     try {
       const { id } = req.params;
-      // Idealmente, validar se o monitoramento pertence ao usuarioId aqui
-      await prisma.monitoramento.delete({ where: { id: Number(id) } });
+      await monitoramentoRepository.deletar(id);
       return res.status(204).send();
     } catch (error) {
       return res.status(500).json({ error: "Erro ao remover cidade." });

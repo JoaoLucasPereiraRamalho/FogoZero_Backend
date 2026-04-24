@@ -26,15 +26,25 @@ const alertaService = {
       interessados.forEach((item) => {
         const { nome, email } = item.usuario;
 
+        let mensagemContexto = "";
+        if (origem === "QUEIMADA") {
+          mensagemContexto = `Focos de incêndio detectados via Satélite (INPE/Monitoramento).`;
+        } else if (origem === "REPORTE") {
+          mensagemContexto = `Um cidadão reportou um foco de incêndio próximo a você.`;
+        } else {
+          mensagemContexto = `Nova notícia relevante publicada sobre a região.`;
+        }
         // LOGICA DE ENVIO (Simulada)
         console.log(`--------------------------------------------------`);
         console.log(`📧 ENVIANDO E-MAIL PARA: ${email}`);
-        console.log(`Olá ${nome}, o FogoZero detectou um novo registro:`);
+        console.log(
+          `Olá ${nome}, o sistema FogoZero tem um novo alerta para você:`,
+        );
+        console.log(`⚠️  Tipo: ${origem}`);
         console.log(`📍 Local: ${cidade} - MG`);
-        console.log(`📝 Detalhes: ${titulo}`);
+        console.log(`ℹ️  Contexto: ${mensagemContexto}`);
+        console.log(`📝 Detalhes: ${informacao}`);
         console.log(`--------------------------------------------------`);
-
-        // Aqui no futuro você faz: await transport.sendMail({...})
       });
     } catch (error) {
       console.error("❌ Erro ao processar alertas:", error.message);

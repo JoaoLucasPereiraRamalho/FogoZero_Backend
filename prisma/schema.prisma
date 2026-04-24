@@ -17,6 +17,7 @@ model Usuario {
   data_cadastro DateTime? @default(now())
   reportes      Reporte[]
   noticias      Noticia[]
+  monitoramentos Monitoramento[]
 
   @@map("usuario")
 }
@@ -124,5 +125,5 @@ model Monitoramento {
 
   usuario     Usuario  @relation(fields: [usuarioId], references: [id])
 
-  @@unique([usuarioId, cidade]) // Evita duplicados para o mesmo usuário
+  @@unique([usuarioId, cidade])
 }

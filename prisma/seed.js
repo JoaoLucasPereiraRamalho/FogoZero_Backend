@@ -11,6 +11,18 @@ const prisma = new PrismaClient({ adapter });
 async function main() {
   console.log("🌱 Iniciando o seeder...");
 
+  await prisma.statusAnaliseIa.upsert({
+    where: { id: 1 },
+    update: {},
+    create: { id: 1, descricao: "Pendente (IA)" },
+  });
+
+  await prisma.statusAnaliseAdmin.upsert({
+    where: { id: 1 },
+    update: {},
+    create: { id: 1, descricao: "Aguardando Revisão Humana" },
+  });
+
   // 1. Cria um usuário padrão (para usarmos o ID dele ao criar reportes)
   const usuario = await prisma.usuario.upsert({
     where: { email: "admin@fogozero.mg.gov.br" },
@@ -18,8 +30,10 @@ async function main() {
     create: {
       nome: "Administrador FogoZero",
       email: "admin@fogozero.mg.gov.br",
-      tipo: "ADMIN",
-      senha_hash: "senha_falsa_para_teste_123", // <-- Adicione esta linha
+      telefone: "31999999999",
+      senha_hash: "senha_falsa_para_teste_123",
+      id_regiao: 1,
+      tipo: "admin",
     },
   });
   // 2. Cria tipos de região
