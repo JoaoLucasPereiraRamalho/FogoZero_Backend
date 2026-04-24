@@ -1,7 +1,6 @@
 const monitoramentoRepository = require("../repositories/monitoramento.repository");
 
 const monitoramentoController = {
-  // Adiciona uma nova cidade para monitorizar
   async store(req, res) {
     try {
       const { cidade, estado } = req.body;
@@ -28,7 +27,6 @@ const monitoramentoController = {
     }
   },
 
-  // Lista as cidades que o utilizador logado segue
   async index(req, res) {
     try {
       const usuarioId = req.user.userId;
@@ -39,7 +37,6 @@ const monitoramentoController = {
     }
   },
 
-  // Remove uma cidade da monitorização
   async delete(req, res) {
     try {
       const { id } = req.params;

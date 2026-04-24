@@ -18,6 +18,7 @@ model Usuario {
   reportes      Reporte[]
   noticias      Noticia[]
   monitoramentos Monitoramento[]
+  notificacoes  Notificacao[]
 
   @@map("usuario")
 }
@@ -126,4 +127,21 @@ model Monitoramento {
   usuario     Usuario  @relation(fields: [usuarioId], references: [id])
 
   @@unique([usuarioId, cidade])
+}
+
+model Notificacao {
+  id          Int       @id @default(autoincrement())
+  usuarioId   Int
+  tipo        String    // QUEIMADA, NOTICIA, REPORTE
+  titulo      String
+  descricao   String    @db.Text
+  cidade      String
+  lido        Boolean   @default(false)
+  criadoEm    DateTime  @default(now())
+
+  usuario     Usuario   @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+
+  @@index([usuarioId])
+  @@index([lido])
+  @@map("notificacoes")
 }

@@ -79,7 +79,6 @@ async function findUsuarioById(id) {
   });
 }
 
-// Aliases de compatibilidade com implementacao anterior.
 async function criar(dados) {
   return prisma.reporte.create({
     data: dados,

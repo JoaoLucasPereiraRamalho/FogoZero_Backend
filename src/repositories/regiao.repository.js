@@ -1,9 +1,6 @@
 const prisma = require("../config/database");
 
 const regiaoRepository = {
-  /**
-   * Busca uma região pelo ID para obter o nome da cidade
-   */
   async findById(id) {
     try {
       return await prisma.regiao.findUnique({
@@ -14,9 +11,6 @@ const regiaoRepository = {
     }
   },
 
-  /**
-   * Lista todas as regiões (útil para preencher selects no frontend)
-   */
   async listarTodas() {
     return await prisma.regiao.findMany({
       orderBy: { nome: "asc" },

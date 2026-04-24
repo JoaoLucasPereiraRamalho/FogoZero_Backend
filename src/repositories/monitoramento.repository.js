@@ -1,10 +1,6 @@
 const prisma = require("../config/database");
 
 const monitoramentoRepository = {
-  /**
-   * Busca todos os usuários que monitoram uma cidade específica.
-   * Útil para o serviço de alertas disparar e-mails.
-   */
   async buscarInteressadosPorCidade(cidade) {
     return await prisma.monitoramento.findMany({
       where: {
@@ -20,9 +16,6 @@ const monitoramentoRepository = {
     });
   },
 
-  /**
-   * Cria um novo registro de monitoramento para um usuário.
-   */
   async criar(dados) {
     return await prisma.monitoramento.create({
       data: {
@@ -34,9 +27,6 @@ const monitoramentoRepository = {
     });
   },
 
-  /**
-   * Lista todas as cidades que um usuário específico está monitorando.
-   */
   async listarPorUsuario(usuarioId) {
     return await prisma.monitoramento.findMany({
       where: {
@@ -48,9 +38,6 @@ const monitoramentoRepository = {
     });
   },
 
-  /**
-   * Remove um monitoramento específico.
-   */
   async deletar(id) {
     return await prisma.monitoramento.delete({
       where: { id: Number(id) },

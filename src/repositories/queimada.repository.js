@@ -2,21 +2,18 @@ const prisma = require("../config/database");
 
 class QueimadaRepository {
   async buscarPorFiltros(filtros) {
-    // Monta o objeto de filtro dinamicamente
     const where = {};
 
     if (filtros.id_regiao) {
       where.id_regiao = filtros.id_regiao;
     }
 
-    // Filtro por intervalo de datas (maior ou igual, menor ou igual)
     if (filtros.data_inicio || filtros.data_fim) {
       where.data_registro = {};
       if (filtros.data_inicio) where.data_registro.gte = filtros.data_inicio;
       if (filtros.data_fim) where.data_registro.lte = filtros.data_fim;
     }
 
-    // Executa a busca no banco trazendo os dados da Região junto
     return await prisma.registroQueimada.findMany({
       where,
       include: {
@@ -25,7 +22,18 @@ class QueimadaRepository {
         },
       },
       orderBy: {
-        data_registro: "desc", // Retorna os mais recentes primeiro
+        data_registro: "desc",
+      },
+    });
+  }
+
+  async criar(dados) {
+    return await prisma.registroQueimada.create({
+      data: {
+        id_regiao: dados.id_regiao,
+        quantidade_focos: dados.quantidade_focos,
+        fonte_dados: dados.fonte_dados,
+        data_registro: dados.data_registro,
       },
     });
   }

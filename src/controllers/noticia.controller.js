@@ -1,6 +1,7 @@
 const noticiaCrawler = require("../services/noticiaCrawler.service");
 const noticiaRepository = require("../repositories/noticia.repository");
 const noticiaDTO = require("../dtos/noticia.dto");
+const alertaService = require("../services/alerta.service");
 
 const importacaoStatus = {};
 
@@ -175,6 +176,29 @@ async function processarImportacao(importId, autorId) {
         noticiasSalvas.push(noticiaSalva);
 
         console.log(`[${importId}] ✅ Notícia salva: ${noticiaSalva.titulo}`);
+
+        try {
+          const cidade = extrairCidade(noticiaSalva.titulo);
+          if (cidade) {
+            console.log(`[${importId}] 📍 Cidade detectada: ${cidade}`);
+            alertaService
+              .notificarNoticia(
+                noticiaSalva.titulo,
+                noticiaSalva.conteudo,
+                cidade,
+                noticiaSalva.fonte_url,
+              )
+              .catch((err) => {
+                console.error(
+                  `[${importId}] ⚠️ Erro ao enviar alertas: ${err.message}`,
+                );
+              });
+          }
+        } catch (erroAlerta) {
+          console.error(
+            `[${importId}] ⚠️ Erro ao processar alertas: ${erroAlerta.message}`,
+          );
+        }
       } catch (erro) {
         importacaoStatus[importId].erros++;
         console.error(
@@ -210,3 +234,65 @@ async function processarImportacao(importId, autorId) {
 }
 
 module.exports = noticiaController;
+
+function extrairCidade(titulo) {
+  const cidades = [
+    "Belo Horizonte",
+    "Brumadinho",
+    "Lagoa da Prata",
+    "Divinópolis",
+    "Governador Valadares",
+    "Montes Claros",
+    "Juiz de Fora",
+    "Contagem",
+    "Betim",
+    "Uberlândia",
+    "Anápolis",
+    "Araxá",
+    "Itabira",
+    "Timóteo",
+    "Ipatinga",
+    "Caratinga",
+    "Ouro Preto",
+    "Mariana",
+    "São João del-Rei",
+    "Congonhas",
+    "Itajubá",
+    "Poços de Caldas",
+    "Lavras",
+    "Passos",
+    "Iguatama",
+    "Nova Lima",
+    "Sabará",
+    "Santa Bárbara",
+    "Itabira",
+    "João Monlevade",
+    "Açucena",
+    "Viçosa",
+    "Ponte Nova",
+    "Aimorés",
+    "Itueta",
+    "Nanuque",
+    "Teófilo Otoni",
+    "Turmalina",
+    "Almenara",
+    "Araçuaí",
+    "Fagundes",
+    "Jequitinhonha",
+    "Franciscópolis",
+    "Berilo",
+    "Capelinha",
+    "Diamantina",
+    "Couto de Magalhães de Minas",
+  ];
+
+  const tituloLower = titulo.toLowerCase();
+
+  for (const cidade of cidades) {
+    if (tituloLower.includes(cidade.toLowerCase())) {
+      return cidade;
+    }
+  }
+
+  return null;
+}

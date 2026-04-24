@@ -1,33 +1,58 @@
 const QueimadaRepository = require("../repositories/queimada.repository");
 const RegiaoRepository = require("../repositories/regiao.repository"); // Necessário para pegar o nome da cidade
-const AlertaService = require("./alerta.service");
+const alertaService = require("./alerta.service");
 
 class QueimadaService {
   async consultar(filtros) {
     const registros = await QueimadaRepository.buscarPorFiltros(filtros);
 
-    // Aqui você poderia, por exemplo, calcular o total de focos
-    // const totalFocos = registros.reduce((acc, curr) => acc + (curr.quantidade_focos || 0), 0);
-
     return registros;
   }
 
+  /**
+   * Registra novos focos e dispara a cadeia de notificações
+   * @param {Object} dados - Contém id_regiao, quantidade_focos, fonte_dados, etc.
+   */
   async registrarFocos(dados) {
-    // 1. Salva o registro de queimada no banco
-    const novoRegistro = await QueimadaRepository.criar(dados);
+    try {
+      console.log(
+        `🔥 [SERVICE] Iniciando registro de focos para região ID: ${dados.id_regiao}`,
+      );
 
-    // 2. Busca os detalhes da região para saber o nome da cidade
-    const regiao = await RegiaoRepository.findById(dados.id_regiao);
+      // 1. Persistência: Salva o foco de incêndio no banco de dados
+      const novoRegistro = await QueimadaRepository.criar({
+        id_regiao: Number(dados.id_regiao),
+        quantidade_focos: Number(dados.quantidade_focos),
+        fonte_dados: dados.fonte_dados || "INPE",
+        data_registro: dados.data_registro || new Date(),
+      });
 
-    // 3. Se houver focos e a região for encontrada, dispara o alerta
-    if (novoRegistro.quantidade_focos > 0 && regiao) {
-      const detalhes = `${novoRegistro.quantidade_focos} focos de incêndio detectados via satélite (${novoRegistro.fonte_dados || "INPE"}).`;
+      const regiao = await RegiaoRepository.findById(dados.id_regiao);
 
-      // Dispara o alerta de forma assíncrona (não trava a resposta da requisição)
-      AlertaService.processarNovoEvento(regiao.nome, "QUEIMADA", detalhes);
+      if (!regiao) {
+        console.warn(
+          `⚠️ Região ID ${dados.id_regiao} não encontrada. Alertas não serão disparados.`,
+        );
+        return novoRegistro;
+      }
+
+      if (novoRegistro.quantidade_focos > 0) {
+        await alertaService.notificarQueimada(
+          regiao.nome,
+          novoRegistro.quantidade_focos,
+          novoRegistro.fonte_dados,
+          novoRegistro.data_registro,
+        );
+      }
+
+      return novoRegistro;
+    } catch (error) {
+      console.error(
+        "❌ Erro no QueimadaService.registrarFocos:",
+        error.message,
+      );
+      throw error;
     }
-
-    return novoRegistro;
   }
 }
 
