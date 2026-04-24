@@ -1,7 +1,25 @@
+const bcrypt = require("bcryptjs");
 const { ZodError } = require("zod");
 const AppError = require("../utils/appError");
+const prisma = require("../config/database");
 const reporteRepository = require("../repositories/reporte.repository");
 const alertaService = require("./alerta.service");
+const {
+  getBcryptRounds,
+  signToken,
+  sanitizeUser,
+} = require("../utils/authHelpers");
+const { formatarDataBR } = require("../utils/formatters");
+
+//imports para o reconhecimento do microservice python
+const axios = require("axios");
+const FormData = require("form-data");
+const fs = require("fs");
+
+//imports para manipulação de arquivos temporários
+const path = require("path");
+const os = require("os");
+
 const {
   createReporteSchema,
   reporteIdParamSchema,
@@ -10,6 +28,7 @@ const {
   userReporteListQuerySchema,
   updateStatusAdminSchema,
   forwardReporteSchema,
+  primeiroReporteSchema,
 } = require("../dtos/reporte.dto");
 
 function mapZodError(error) {
@@ -63,11 +82,44 @@ function toPublicReporte(reporte) {
     imagem_url: reporte.imagem_url,
     id_status_analise_ia: reporte.id_status_analise_ia,
     id_status_analise_admin: reporte.id_status_analise_admin,
-    data_reporte: reporte.data_reporte,
+    data_reporte: reporte.data_reporte
+      ? formatarDataBR(reporte.data_reporte)
+      : null,
     usuario: reporte.usuario || null,
     status_analise_ia: reporte.status_analise_ia || null,
     status_analise_admin: reporte.status_analise_admin || null,
   };
+}
+
+//função que baixa a imagem do reporte para um caminho temporário e retorna o caminho do arquivo salvo
+async function baixarImagem(url) {
+  const response = await axios({
+    url,
+    method: "GET",
+    responseType: "stream",
+  });
+
+  const filePath = path.join(os.tmpdir(), `img_${Date.now()}.jpg`);
+  const writer = fs.createWriteStream(filePath);
+
+  response.data.pipe(writer);
+
+  return new Promise((resolve, reject) => {
+    writer.on("finish", () => resolve(filePath));
+    writer.on("error", reject);
+  });
+}
+
+//função que chama o modelo de IA para analisar a imagem e retornar o resultado da analise
+async function analisarImagemComIA(imagemPath) {
+  const formData = new FormData();
+  formData.append("file", fs.createReadStream(imagemPath));
+
+  const response = await axios.post("http://localhost:8000/predict", formData, {
+    headers: formData.getHeaders(),
+  });
+
+  return response.data;
 }
 
 async function validateStatusIds(data) {
@@ -150,13 +202,30 @@ async function create(input, authenticatedUserId) {
     await ensureUserExists(authenticatedUserId);
     await validateStatusIds(data);
 
+    let resultadoIA = null;
+
+    if (data.imagem_url) {
+      const imagemPath = await baixarImagem(data.imagem_url);
+
+      resultadoIA = await analisarImagemComIA(imagemPath);
+
+      //deleta o arquivo temporário após a análise para evitar acúmulo de arquivos no servidor
+      fs.unlink(imagemPath, () => {});
+    }
+
+    let statusIA = 1; // padrão (sem incendio)
+
+    if (resultadoIA && resultadoIA.resultado === "incendio") {
+      statusIA = 2; // supondo que 2 = incendio detectado
+    }
+
     const reporte = await reporteRepository.createReporte({
       usuario_id: authenticatedUserId,
       assunto: data.assunto,
       latitude: data.latitude,
       longitude: data.longitude,
       imagem_url: data.imagem_url,
-      id_status_analise_ia: data.id_status_analise_ia ?? 1,
+      id_status_analise_ia: statusIA,
       id_status_analise_admin: data.id_status_analise_admin ?? 1,
     });
 
@@ -298,12 +367,76 @@ async function registrarNovoReporte(dados) {
     id_status_analise_ia: dados.id_status_analise_ia ?? 1,
     id_status_analise_admin: dados.id_status_analise_admin ?? 1,
   };
+async function registerAndCreateFirstReporte(input) {
+  try {
+    const data = primeiroReporteSchema.parse(input);
+    const email = data.usuario.email.toLowerCase();
 
-  return reporteRepository.criar(reporteParaSalvar);
-}
+    const existingUser = await prisma.usuario.findUnique({ where: { email } });
+    if (existingUser) {
+      throw new AppError("Email ja cadastrado.", 409);
+    }
 
-async function listarTodos() {
-  return reporteRepository.buscarTodos();
+    const senhaHash = await bcrypt.hash(data.usuario.senha, getBcryptRounds());
+
+    const [createdUser, createdReporte] = await prisma.$transaction(
+      async (tx) => {
+        const usuario = await tx.usuario.create({
+          data: {
+            nome: data.usuario.nome,
+            email,
+            telefone: data.usuario.telefone,
+            senha_hash: senhaHash,
+            tipo: "usuario",
+            id_regiao: data.usuario.id_regiao,
+          },
+          select: {
+            id: true,
+            nome: true,
+            email: true,
+            telefone: true,
+            tipo: true,
+            id_regiao: true,
+            data_cadastro: true,
+          },
+        });
+
+        const reporte = await tx.reporte.create({
+          data: {
+            usuario_id: usuario.id,
+            assunto: data.reporte.assunto,
+            latitude: data.reporte.latitude,
+            longitude: data.reporte.longitude,
+            imagem_url: data.reporte.imagem_url,
+            id_status_analise_ia: 1,
+            id_status_analise_admin: 1,
+          },
+          include: {
+            status_analise_ia: { select: { id: true, descricao: true } },
+            status_analise_admin: { select: { id: true, descricao: true } },
+          },
+        });
+
+        return [usuario, reporte];
+      },
+    );
+
+    return {
+      usuario: sanitizeUser(createdUser),
+      token: signToken(createdUser),
+      reporte: toPublicReporte(createdReporte),
+    };
+  } catch (error) {
+    if (error instanceof ZodError) {
+      throw new AppError(
+        "Dados do primeiro reporte invalidos.",
+        400,
+        mapZodError(error),
+      );
+    }
+
+    throw error;
+  }
 }
 
 function encontrarCidadePorCoordenada(latitude, longitude) {
@@ -354,6 +487,5 @@ module.exports = {
   getById,
   updateAdminStatus,
   forwardToFireDepartment,
-  registrarNovoReporte,
-  listarTodos,
+  registerAndCreateFirstReporte,
 };

@@ -144,4 +144,25 @@ model Notificacao {
   @@index([usuarioId])
   @@index([lido])
   @@map("notificacoes")
+model MunicipioMG {
+  id                  Int      @id @default(autoincrement())
+  municipio           String   @unique
+  numero_focos        Int?
+  lat                 Float?
+  lon                 Float?
+  imri                Float?
+  classificacao_imri  String?
+  bioma_mais_afetado  String?
+  mes_mais_afetado    String?
+  focos_2015          Int?
+  focos_2016          Int?
+  focos_2017          Int?
+  focos_2018          Int?
+  focos_2019          Int?
+  focos_2020          Int?
+  focos_2021          Int?
+  focos_2022          Int?
+  focos_2023          Int?
+  focos_2024          Int?
+  focos_2025          Int?
 }

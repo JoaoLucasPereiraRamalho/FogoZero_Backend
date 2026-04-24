@@ -7,6 +7,8 @@ const {
   requireSelf,
 } = require("../middlewares/authorize.middleware");
 
+router.post("/primeiro", reporteController.createFirstReporte);
+
 router.post("/", authMiddleware, reporteController.create);
 
 router.get(

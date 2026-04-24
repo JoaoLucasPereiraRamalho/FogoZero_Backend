@@ -9,6 +9,9 @@ const queimadaRoutes = require("./routes/queimada.routes");
 const noticiaRoutes = require("./routes/noticia.routes");
 const monitoramentoRoutes = require("./routes/monitoramento.routes");
 const notificacaoRoutes = require("./routes/notificacao.routes");
+const municipioRoutes = require("./routes/municipios.routes");
+const graficosRoutes = require("./routes/graficos.routes");
+const biomaRoutes = require("./routes/bioma.routes");
 const errorHandler = require("./middlewares/errorHandler");
 const setupSwagger = require("./swagger");
 
@@ -31,6 +34,9 @@ app.use("/api/queimadas", queimadaRoutes);
 app.use("/api/noticias", noticiaRoutes);
 app.use("/api/monitoramentos", monitoramentoRoutes);
 app.use("/api/notificacoes", notificacaoRoutes);
+app.use("/api/municipios", municipioRoutes);
+app.use("/api/graficos", graficosRoutes);
+app.use("/api/biomas", biomaRoutes);
 setupSwagger(app);
 app.use(errorHandler);
 
@@ -44,5 +50,9 @@ app.listen(PORT, () => {
   console.log(
     `Acesse Rotas Educativas: http://localhost:${PORT}/api/educativo`,
   );
+  console.log(
+    `Acesse Rotas de Municipios: http://localhost:${PORT}/api/municipios`,
+  );
+  console.log(`Acesse Rotas de Biomas: http://localhost:${PORT}/api/biomas`);
   console.log(`Acesse Swagger: http://localhost:${PORT}/api-docs`);
 });

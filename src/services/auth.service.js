@@ -9,34 +9,18 @@ const {
   forgotPasswordSchema,
   resetPasswordSchema,
 } = require("../dtos/auth.dto");
+const {
+  getJwtSecret,
+  getBcryptRounds,
+  signToken,
+  sanitizeUser,
+} = require("../utils/authHelpers");
 
 function mapZodError(error) {
   return error.issues.map((issue) => ({
     campo: issue.path.join("."),
     mensagem: issue.message,
   }));
-}
-
-function getJwtSecret() {
-  const secret = process.env.JWT_SECRET;
-
-  if (!secret) {
-    throw new AppError("JWT_SECRET nao configurada no ambiente.", 500);
-  }
-
-  return secret;
-}
-
-function signToken(user) {
-  const payload = {
-    userId: user.id,
-    email: user.email,
-    tipo: String(user.tipo || "usuario").toLowerCase(),
-  };
-
-  return jwt.sign(payload, getJwtSecret(), {
-    expiresIn: process.env.JWT_EXPIRATION || "24h",
-  });
 }
 
 function signPasswordResetToken(user) {
@@ -48,31 +32,6 @@ function signPasswordResetToken(user) {
   return jwt.sign(payload, getJwtSecret(), {
     expiresIn: process.env.PASSWORD_RESET_EXPIRATION || "15m",
   });
-}
-
-function getBcryptRounds() {
-  const rounds = Number(process.env.BCRYPT_ROUNDS || 10);
-
-  if (!Number.isInteger(rounds) || rounds < 6 || rounds > 14) {
-    throw new AppError(
-      "BCRYPT_ROUNDS invalido. Use um valor entre 6 e 14.",
-      500,
-    );
-  }
-
-  return rounds;
-}
-
-function sanitizeUser(user) {
-  return {
-    id: user.id,
-    nome: user.nome,
-    email: user.email,
-    telefone: user.telefone,
-    tipo: user.tipo,
-    id_regiao: user.id_regiao,
-    data_cadastro: user.data_cadastro,
-  };
 }
 
 async function register(input) {
