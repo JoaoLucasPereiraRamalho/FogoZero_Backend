@@ -5,6 +5,7 @@ const cors = require("cors");
 const authRoutes = require("./routes/auth.routes");
 const reporteRoutes = require("./routes/reporte.routes");
 const educativoRoutes = require("./routes/educativo.routes");
+const biomaRoutes = require("./routes/bioma.routes");
 const errorHandler = require("./middlewares/errorHandler");
 const setupSwagger = require("./swagger");
 
@@ -23,6 +24,7 @@ app.get("/ping", (req, res) => {
 app.use("/api/auth", authRoutes);
 app.use("/api/reportes", reporteRoutes);
 app.use("/api/educativo", educativoRoutes);
+app.use("/api/biomas", biomaRoutes);
 setupSwagger(app);
 app.use(errorHandler);
 
@@ -36,5 +38,6 @@ app.listen(PORT, () => {
   console.log(
     `Acesse Rotas Educativas: http://localhost:${PORT}/api/educativo`,
   );
+  console.log(`Acesse Rotas de Biomas: http://localhost:${PORT}/api/biomas`);
   console.log(`Acesse Swagger: http://localhost:${PORT}/api-docs`);
 });
