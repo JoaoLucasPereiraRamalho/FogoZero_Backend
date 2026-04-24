@@ -1,5 +1,8 @@
+const bcrypt = require("bcryptjs");
+const jwt = require("jsonwebtoken");
 const { ZodError } = require("zod");
 const AppError = require("../utils/appError");
+const prisma = require("../config/database");
 const reporteRepository = require("../repositories/reporte.repository");
 const {
   createReporteSchema,
@@ -9,6 +12,7 @@ const {
   userReporteListQuerySchema,
   updateStatusAdminSchema,
   forwardReporteSchema,
+  primeiroReporteSchema,
 } = require("../dtos/reporte.dto");
 
 function mapZodError(error) {
@@ -20,6 +24,49 @@ function mapZodError(error) {
 
 function throwValidationError(message, error) {
   throw new AppError(message, 400, mapZodError(error));
+}
+
+function getJwtSecret() {
+  const secret = process.env.JWT_SECRET;
+  if (!secret) {
+    throw new AppError("JWT_SECRET nao configurada no ambiente.", 500);
+  }
+  return secret;
+}
+
+function getBcryptRounds() {
+  const rounds = Number(process.env.BCRYPT_ROUNDS || 10);
+  if (!Number.isInteger(rounds) || rounds < 6 || rounds > 14) {
+    throw new AppError(
+      "BCRYPT_ROUNDS invalido. Use um valor entre 6 e 14.",
+      500,
+    );
+  }
+  return rounds;
+}
+
+function signToken(user) {
+  return jwt.sign(
+    {
+      userId: user.id,
+      email: user.email,
+      tipo: String(user.tipo || "usuario").toLowerCase(),
+    },
+    getJwtSecret(),
+    { expiresIn: process.env.JWT_EXPIRATION || "24h" },
+  );
+}
+
+function sanitizeUser(user) {
+  return {
+    id: user.id,
+    nome: user.nome,
+    email: user.email,
+    telefone: user.telefone,
+    tipo: user.tipo,
+    id_regiao: user.id_regiao,
+    data_cadastro: user.data_cadastro,
+  };
 }
 
 function buildListWhere(query) {
@@ -284,6 +331,78 @@ async function listarTodos() {
   return reporteRepository.buscarTodos();
 }
 
+async function registerAndCreateFirstReporte(input) {
+  try {
+    const data = primeiroReporteSchema.parse(input);
+    const email = data.usuario.email.toLowerCase();
+
+    const existingUser = await prisma.usuario.findUnique({ where: { email } });
+    if (existingUser) {
+      throw new AppError("Email ja cadastrado.", 409);
+    }
+
+    const senhaHash = await bcrypt.hash(data.usuario.senha, getBcryptRounds());
+
+    const [createdUser, createdReporte] = await prisma.$transaction(
+      async (tx) => {
+        const usuario = await tx.usuario.create({
+          data: {
+            nome: data.usuario.nome,
+            email,
+            telefone: data.usuario.telefone,
+            senha_hash: senhaHash,
+            tipo: "usuario",
+            id_regiao: data.usuario.id_regiao,
+          },
+          select: {
+            id: true,
+            nome: true,
+            email: true,
+            telefone: true,
+            tipo: true,
+            id_regiao: true,
+            data_cadastro: true,
+          },
+        });
+
+        const reporte = await tx.reporte.create({
+          data: {
+            usuario_id: usuario.id,
+            assunto: data.reporte.assunto,
+            latitude: data.reporte.latitude,
+            longitude: data.reporte.longitude,
+            imagem_url: data.reporte.imagem_url,
+            id_status_analise_ia: 1,
+            id_status_analise_admin: 1,
+          },
+          include: {
+            status_analise_ia: { select: { id: true, descricao: true } },
+            status_analise_admin: { select: { id: true, descricao: true } },
+          },
+        });
+
+        return [usuario, reporte];
+      },
+    );
+
+    return {
+      usuario: sanitizeUser(createdUser),
+      token: signToken(createdUser),
+      reporte: toPublicReporte(createdReporte),
+    };
+  } catch (error) {
+    if (error instanceof ZodError) {
+      throw new AppError(
+        "Dados do primeiro reporte invalidos.",
+        400,
+        mapZodError(error),
+      );
+    }
+
+    throw error;
+  }
+}
+
 module.exports = {
   create,
   listAll,
@@ -293,4 +412,5 @@ module.exports = {
   forwardToFireDepartment,
   registrarNovoReporte,
   listarTodos,
+  registerAndCreateFirstReporte,
 };

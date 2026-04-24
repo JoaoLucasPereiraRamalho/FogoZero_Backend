@@ -185,6 +185,55 @@
         ]
       }
     },
+    "/api/reportes/primeiro": {
+      "post": {
+        "tags": [
+          "Reportes"
+        ],
+        "summary": "Cadastro e primeiro reporte em uma unica operacao",
+        "description": "Cria um novo usuario e seu primeiro reporte atomicamente. Nao requer autenticacao. Retorna o usuario criado, um token JWT de acesso e o reporte registrado.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PrimeiroReporteInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Usuario e reporte criados com sucesso",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "usuario": {
+                      "$ref": "#/components/schemas/AuthUsuario"
+                    },
+                    "token": {
+                      "type": "string",
+                      "description": "JWT de acesso"
+                    },
+                    "reporte": {
+                      "$ref": "#/components/schemas/Reporte"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          }
+        }
+      }
+    },
     "/api/reportes/usuario/{usuario_id}": {
       "get": {
         "tags": [
@@ -1232,6 +1281,87 @@
           }
         }
       },
+      "PrimeiroReporteInput": {
+        "type": "object",
+        "required": [
+          "usuario",
+          "reporte"
+        ],
+        "properties": {
+          "usuario": {
+            "type": "object",
+            "required": [
+              "nome",
+              "email",
+              "telefone",
+              "id_regiao",
+              "senha"
+            ],
+            "properties": {
+              "nome": {
+                "type": "string",
+                "minLength": 2,
+                "maxLength": 120,
+                "example": "Maria da Silva"
+              },
+              "email": {
+                "type": "string",
+                "format": "email",
+                "example": "maria@exemplo.com"
+              },
+              "telefone": {
+                "type": "string",
+                "example": "+55 (31) 99999-9999"
+              },
+              "id_regiao": {
+                "type": "integer",
+                "minimum": 1,
+                "example": 5
+              },
+              "senha": {
+                "type": "string",
+                "minLength": 6,
+                "maxLength": 72,
+                "example": "senha123"
+              }
+            }
+          },
+          "reporte": {
+            "type": "object",
+            "required": [
+              "assunto",
+              "latitude",
+              "longitude",
+              "imagem_url"
+            ],
+            "properties": {
+              "assunto": {
+                "type": "string",
+                "minLength": 5,
+                "maxLength": 1000,
+                "example": "Foco de incendio proximo a area de mata"
+              },
+              "latitude": {
+                "type": "number",
+                "minimum": -90,
+                "maximum": 90,
+                "example": -19.9245
+              },
+              "longitude": {
+                "type": "number",
+                "minimum": -180,
+                "maximum": 180,
+                "example": -43.9352
+              },
+              "imagem_url": {
+                "type": "string",
+                "format": "uri",
+                "example": "https://cdn.exemplo.com/imagens/reporte-123.jpg"
+              }
+            }
+          }
+        }
+      },
       "UpdateStatusAdminInput": {
         "type": "object",
         "required": [
@@ -1782,6 +1912,16 @@
       },
       "Forbidden": {
         "description": "Acesso negado",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse"
+            }
+          }
+        }
+      },
+      "Conflict": {
+        "description": "Conflito - recurso ja existe",
         "content": {
           "application/json": {
             "schema": {

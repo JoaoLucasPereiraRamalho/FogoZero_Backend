@@ -64,6 +64,15 @@ async function forwardToFireDepartment(req, res, next) {
   }
 }
 
+async function createFirstReporte(req, res, next) {
+  try {
+    const result = await reporteService.registerAndCreateFirstReporte(req.body);
+    return res.status(201).json(result);
+  } catch (error) {
+    return next(error);
+  }
+}
+
 module.exports = {
   create,
   listAll,
@@ -71,4 +80,5 @@ module.exports = {
   getById,
   updateAdminStatus,
   forwardToFireDepartment,
+  createFirstReporte,
 };
