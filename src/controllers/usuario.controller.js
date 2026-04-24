@@ -48,10 +48,14 @@ async function deleteAccount(req, res, next) {
 
 async function getHistoricoReportes(req, res, next) {
   try {
+    const isAdmin =
+      String(req.user.tipo || "").toLowerCase() === "administrador";
+    const params = { usuario_id: req.params.id };
     const result = await reporteService.listByUsuario(
-      req.params,
+      params,
       req.query,
       req.user.userId,
+      isAdmin,
     );
     return res.status(200).json(result);
   } catch (error) {

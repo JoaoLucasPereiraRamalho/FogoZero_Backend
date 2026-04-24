@@ -254,7 +254,12 @@ async function listAll(query) {
   }
 }
 
-async function listByUsuario(params, query, authenticatedUserId) {
+async function listByUsuario(
+  params,
+  query,
+  authenticatedUserId,
+  isAdmin = false,
+) {
   try {
     if (!authenticatedUserId) {
       throw new AppError("Usuario nao autenticado.", 401);
@@ -262,7 +267,7 @@ async function listByUsuario(params, query, authenticatedUserId) {
 
     const { usuario_id } = usuarioIdParamSchema.parse(params);
 
-    if (authenticatedUserId !== usuario_id) {
+    if (!isAdmin && authenticatedUserId !== usuario_id) {
       throw new AppError("Acesso negado para este recurso.", 403);
     }
 
