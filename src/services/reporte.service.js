@@ -4,6 +4,16 @@ const { ZodError } = require("zod");
 const AppError = require("../utils/appError");
 const prisma = require("../config/database");
 const reporteRepository = require("../repositories/reporte.repository");
+
+//imports para o reconhecimento do microservice python
+const axios = require("axios");
+const FormData = require("form-data");
+const fs = require("fs");
+
+//imports para manipulação de arquivos temporários
+const path = require("path");
+const os = require("os");
+
 const {
   createReporteSchema,
   reporteIdParamSchema,
@@ -14,6 +24,7 @@ const {
   forwardReporteSchema,
   primeiroReporteSchema,
 } = require("../dtos/reporte.dto");
+
 
 function mapZodError(error) {
   return error.issues.map((issue) => ({
@@ -116,6 +127,39 @@ function toPublicReporte(reporte) {
   };
 }
 
+//função que baixa a imagem do reporte para um caminho temporário e retorna o caminho do arquivo salvo
+async function baixarImagem(url) {
+  const response = await axios({
+    url,
+    method: "GET",
+    responseType: "stream",
+  });
+
+  const filePath = path.join(os.tmpdir(), `img_${Date.now()}.jpg`);
+  const writer = fs.createWriteStream(filePath);
+
+  response.data.pipe(writer);
+
+  return new Promise((resolve, reject) => {
+    writer.on("finish", () => resolve(filePath));
+    writer.on("error", reject);
+  });
+}
+
+//função que chama o modelo de IA para analisar a imagem e retornar o resultado da analise
+async function analisarImagemComIA(imagemPath) {
+  const formData = new FormData();
+  formData.append("file", fs.createReadStream(imagemPath));
+
+  const response = await axios.post(
+    "http://localhost:8000/predict",
+    formData,
+    { headers: formData.getHeaders() }
+  );
+
+  return response.data;
+}
+
 async function validateStatusIds(data) {
   if (data.id_status_analise_ia) {
     const statusIa = await reporteRepository.findStatusIaById(
@@ -196,13 +240,31 @@ async function create(input, authenticatedUserId) {
     await ensureUserExists(authenticatedUserId);
     await validateStatusIds(data);
 
+    let resultadoIA = null;
+
+    if (data.imagem_url) {
+      const imagemPath = await baixarImagem(data.imagem_url);
+
+      resultadoIA = await analisarImagemComIA(imagemPath);
+
+      //deleta o arquivo temporário após a análise para evitar acúmulo de arquivos no servidor
+      fs.unlink(imagemPath, () => {});
+    }
+
+    let statusIA = 1; // padrão (sem incendio)
+
+    if (resultadoIA && resultadoIA.resultado === "incendio") {
+      statusIA = 2; // supondo que 2 = incendio detectado
+    }
+
+
     const reporte = await reporteRepository.createReporte({
       usuario_id: authenticatedUserId,
       assunto: data.assunto,
       latitude: data.latitude,
       longitude: data.longitude,
       imagem_url: data.imagem_url,
-      id_status_analise_ia: data.id_status_analise_ia ?? 1,
+      id_status_analise_ia: statusIA,
       id_status_analise_admin: data.id_status_analise_admin ?? 1,
     });
 
