@@ -21,6 +21,10 @@
       "description": "Endpoints do modulo de reporte comunitario"
     },
     {
+      "name": "Biomas",
+      "description": "Endpoints de visualizacao de queimadas por bioma"
+    },
+    {
       "name": "Educativo",
       "description": "Endpoints do modulo educativo (noticias e glossario)"
     },
@@ -593,6 +597,153 @@
             "BearerAuth": []
           }
         ]
+      }
+    },
+    "/api/biomas": {
+      "get": {
+        "tags": [
+          "Biomas"
+        ],
+        "summary": "Lista todos os biomas",
+        "description": "Retorna a lista de biomas (tipos de regiao) com a quantidade de regioes associadas. Endpoint publico.",
+        "responses": {
+          "200": {
+            "description": "Lista de biomas",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "biomas": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Bioma"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/biomas/{id}": {
+      "get": {
+        "tags": [
+          "Biomas"
+        ],
+        "summary": "Retorna um bioma com suas regioes",
+        "description": "Endpoint publico.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Bioma encontrado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "bioma": {
+                      "$ref": "#/components/schemas/BiomaDetalhado"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      }
+    },
+    "/api/biomas/{id}/registros": {
+      "get": {
+        "tags": [
+          "Biomas"
+        ],
+        "summary": "Lista registros de queimada de um bioma",
+        "description": "Retorna os registros de queimada de todas as regioes pertencentes ao bioma, com paginacao e filtro por intervalo de datas. Endpoint publico.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20
+            }
+          },
+          {
+            "name": "data_inicio",
+            "in": "query",
+            "description": "Data inicial do filtro (ISO 8601)",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          {
+            "name": "data_fim",
+            "in": "query",
+            "description": "Data final do filtro (ISO 8601)",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Registros de queimada paginados",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PagedRegistrosResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
       }
     },
     "/api/educativo/noticias": {
@@ -1582,6 +1733,105 @@
             "type": "integer",
             "minimum": 1,
             "example": 4
+          }
+        }
+      },
+      "Bioma": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "descricao": {
+            "type": "string",
+            "nullable": true,
+            "example": "Cerrado"
+          },
+          "total_regioes": {
+            "type": "integer",
+            "example": 12
+          }
+        }
+      },
+      "BiomaDetalhado": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "descricao": {
+            "type": "string",
+            "nullable": true
+          },
+          "regioes": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": { "type": "integer" },
+                "nome": { "type": "string", "nullable": true }
+              }
+            }
+          }
+        }
+      },
+      "RegistroQueimada": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "id_regiao": {
+            "type": "integer",
+            "nullable": true
+          },
+          "data_registro": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "quantidade_focos": {
+            "type": "integer",
+            "nullable": true
+          },
+          "fonte_dados": {
+            "type": "string",
+            "nullable": true
+          },
+          "regiao": {
+            "type": "object",
+            "nullable": true,
+            "properties": {
+              "id": { "type": "integer" },
+              "nome": { "type": "string", "nullable": true }
+            }
+          }
+        }
+      },
+      "PagedRegistrosResponse": {
+        "type": "object",
+        "properties": {
+          "bioma": {
+            "type": "object",
+            "properties": {
+              "id": { "type": "integer" },
+              "descricao": { "type": "string", "nullable": true }
+            }
+          },
+          "dados": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/RegistroQueimada"
+            }
+          },
+          "meta": {
+            "type": "object",
+            "properties": {
+              "pagina": { "type": "integer" },
+              "limite": { "type": "integer" },
+              "total": { "type": "integer" },
+              "total_paginas": { "type": "integer" }
+            }
           }
         }
       },
