@@ -1,9 +1,14 @@
 const bcrypt = require("bcryptjs");
-const jwt = require("jsonwebtoken");
 const { ZodError } = require("zod");
 const AppError = require("../utils/appError");
 const prisma = require("../config/database");
 const reporteRepository = require("../repositories/reporte.repository");
+const {
+  getBcryptRounds,
+  signToken,
+  sanitizeUser,
+} = require("../utils/authHelpers");
+const { formatarDataBR } = require("../utils/formatters");
 
 //imports para o reconhecimento do microservice python
 const axios = require("axios");
@@ -25,7 +30,6 @@ const {
   primeiroReporteSchema,
 } = require("../dtos/reporte.dto");
 
-
 function mapZodError(error) {
   return error.issues.map((issue) => ({
     campo: issue.path.join("."),
@@ -35,49 +39,6 @@ function mapZodError(error) {
 
 function throwValidationError(message, error) {
   throw new AppError(message, 400, mapZodError(error));
-}
-
-function getJwtSecret() {
-  const secret = process.env.JWT_SECRET;
-  if (!secret) {
-    throw new AppError("JWT_SECRET nao configurada no ambiente.", 500);
-  }
-  return secret;
-}
-
-function getBcryptRounds() {
-  const rounds = Number(process.env.BCRYPT_ROUNDS || 10);
-  if (!Number.isInteger(rounds) || rounds < 6 || rounds > 14) {
-    throw new AppError(
-      "BCRYPT_ROUNDS invalido. Use um valor entre 6 e 14.",
-      500,
-    );
-  }
-  return rounds;
-}
-
-function signToken(user) {
-  return jwt.sign(
-    {
-      userId: user.id,
-      email: user.email,
-      tipo: String(user.tipo || "usuario").toLowerCase(),
-    },
-    getJwtSecret(),
-    { expiresIn: process.env.JWT_EXPIRATION || "24h" },
-  );
-}
-
-function sanitizeUser(user) {
-  return {
-    id: user.id,
-    nome: user.nome,
-    email: user.email,
-    telefone: user.telefone,
-    tipo: user.tipo,
-    id_regiao: user.id_regiao,
-    data_cadastro: user.data_cadastro,
-  };
 }
 
 function buildListWhere(query) {
@@ -120,7 +81,9 @@ function toPublicReporte(reporte) {
     imagem_url: reporte.imagem_url,
     id_status_analise_ia: reporte.id_status_analise_ia,
     id_status_analise_admin: reporte.id_status_analise_admin,
-    data_reporte: reporte.data_reporte,
+    data_reporte: reporte.data_reporte
+      ? formatarDataBR(reporte.data_reporte)
+      : null,
     usuario: reporte.usuario || null,
     status_analise_ia: reporte.status_analise_ia || null,
     status_analise_admin: reporte.status_analise_admin || null,
@@ -151,11 +114,9 @@ async function analisarImagemComIA(imagemPath) {
   const formData = new FormData();
   formData.append("file", fs.createReadStream(imagemPath));
 
-  const response = await axios.post(
-    "http://localhost:8000/predict",
-    formData,
-    { headers: formData.getHeaders() }
-  );
+  const response = await axios.post("http://localhost:8000/predict", formData, {
+    headers: formData.getHeaders(),
+  });
 
   return response.data;
 }
@@ -256,7 +217,6 @@ async function create(input, authenticatedUserId) {
     if (resultadoIA && resultadoIA.resultado === "incendio") {
       statusIA = 2; // supondo que 2 = incendio detectado
     }
-
 
     const reporte = await reporteRepository.createReporte({
       usuario_id: authenticatedUserId,
@@ -378,21 +338,6 @@ async function forwardToFireDepartment(params, input) {
   }
 }
 
-// Aliases de compatibilidade com implementacao anterior.
-async function registrarNovoReporte(dados) {
-  const reporteParaSalvar = {
-    ...dados,
-    id_status_analise_ia: dados.id_status_analise_ia ?? 1,
-    id_status_analise_admin: dados.id_status_analise_admin ?? 1,
-  };
-
-  return reporteRepository.criar(reporteParaSalvar);
-}
-
-async function listarTodos() {
-  return reporteRepository.buscarTodos();
-}
-
 async function registerAndCreateFirstReporte(input) {
   try {
     const data = primeiroReporteSchema.parse(input);
@@ -472,7 +417,5 @@ module.exports = {
   getById,
   updateAdminStatus,
   forwardToFireDepartment,
-  registrarNovoReporte,
-  listarTodos,
   registerAndCreateFirstReporte,
 };

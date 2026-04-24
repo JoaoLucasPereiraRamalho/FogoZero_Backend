@@ -3,12 +3,8 @@ generator client {
 }
 
 datasource db {
-<<<<<<< HEAD
-  provider = "postgresql" 
-=======
   provider = "postgresql"
   url      = env("DATABASE_URL")
->>>>>>> origin/dados-municipios
 }
 
 model Usuario {

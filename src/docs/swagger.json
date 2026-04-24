@@ -35,6 +35,10 @@
     {
       "name": "Municipios",
       "description": "Endpoints para consulta de municipios de Minas Gerais e ranking de focos"
+    },
+    {
+      "name": "Graficos",
+      "description": "Endpoints para acesso a graficos e mapas de focos por municipio"
     }
   ],
   "paths": {
@@ -1483,6 +1487,51 @@
           }
         }
       }
+    },
+    "/api/graficos/{nome}/assets": {
+      "get": {
+        "tags": [
+          "Graficos"
+        ],
+        "summary": "Retorna os assets graficos de um municipio",
+        "description": "Retorna as URLs dos graficos e mapa de focos armazenados no Supabase para o municipio informado. Endpoint publico.",
+        "parameters": [
+          {
+            "name": "nome",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Nome do municipio (ex: Divinopolis)"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Assets retornados com sucesso",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GraficosAssets"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "500": {
+            "description": "Erro de configuracao do servidor",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -1867,7 +1916,7 @@
           },
           "data_reporte": {
             "type": "string",
-            "format": "date-time",
+            "example": "24/04/2026",
             "nullable": true
           },
           "usuario": {
@@ -2251,7 +2300,7 @@
           },
           "data_cadastro": {
             "type": "string",
-            "format": "date-time",
+            "example": "24/04/2026",
             "nullable": true
           }
         }
@@ -2322,6 +2371,34 @@
           "link_reset": {
             "type": "string",
             "nullable": true
+          }
+        }
+      },
+      "GraficosAssets": {
+        "type": "object",
+        "properties": {
+          "municipio": {
+            "type": "string",
+            "example": "Divinopolis"
+          },
+          "nome_arquivo": {
+            "type": "string",
+            "example": "divinopolis"
+          },
+          "grafico_mes_url": {
+            "type": "string",
+            "format": "uri",
+            "example": "https://supabase.io/storage/v1/object/public/mapas/focosMes/grafico_mes_divinopolis.png"
+          },
+          "grafico_taxa_url": {
+            "type": "string",
+            "format": "uri",
+            "example": "https://supabase.io/storage/v1/object/public/mapas/focosTaxa/grafico_taxa_divinopolis.png"
+          },
+          "mapa_url": {
+            "type": "string",
+            "format": "uri",
+            "example": "https://supabase.io/storage/v1/object/public/mapas/mapasFocos/mapa_focos_divinopolis.html"
           }
         }
       }

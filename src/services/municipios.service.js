@@ -1,47 +1,49 @@
-const prisma = require('../config/database');
+const prisma = require("../config/database");
 
-class MunicipioService {
-
-  async listarTodos() {
-    return await prisma.municipioMG.findMany();
-  }
-
-  async buscarPorNome(nome) {
-    return await prisma.municipioMG.findMany({
-      where: {
-        municipio: {
-          contains: nome,
-          mode: 'insensitive'
-        }
-      }
-    });
-  }
-
-  async filtrarPorBioma(bioma) {
-    return await prisma.municipioMG.findMany({
-      where: {
-        bioma_mais_afetado: bioma
-      }
-    });
-  }
-
-  async filtrarPorClassificacao(classificacao) {
-    return await prisma.municipioMG.findMany({
-      where: {
-        classificacao_imri: classificacao
-      }
-    });
-  }
-
-  async rankingFocos() {
-    return await prisma.municipioMG.findMany({
-      orderBy: {
-        numero_focos: 'desc'
-      },
-      take: 10
-    });
-  }
-
+async function listarTodos() {
+  return prisma.municipioMG.findMany();
 }
 
-module.exports = new MunicipioService();
+async function buscarPorNome(nome) {
+  return prisma.municipioMG.findMany({
+    where: {
+      municipio: {
+        contains: nome,
+        mode: "insensitive",
+      },
+    },
+  });
+}
+
+async function filtrarPorBioma(bioma) {
+  return prisma.municipioMG.findMany({
+    where: {
+      bioma_mais_afetado: bioma,
+    },
+  });
+}
+
+async function filtrarPorClassificacao(classificacao) {
+  return prisma.municipioMG.findMany({
+    where: {
+      classificacao_imri: classificacao,
+    },
+  });
+}
+
+async function rankingFocos() {
+  return prisma.municipioMG.findMany({
+    orderBy: {
+      numero_focos: "desc",
+    },
+    take: 10,
+  });
+}
+
+module.exports = {
+  listarTodos,
+  buscarPorNome,
+  filtrarPorBioma,
+  filtrarPorClassificacao,
+  rankingFocos,
+};
