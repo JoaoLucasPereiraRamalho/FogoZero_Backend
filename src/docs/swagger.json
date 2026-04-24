@@ -27,6 +27,10 @@
     {
       "name": "Auth",
       "description": "Endpoints de autenticacao e cadastro"
+    },
+    {
+      "name": "Municipios",
+      "description": "Endpoints para consulta de municipios de Minas Gerais e ranking de focos"
     }
   ],
   "paths": {
@@ -52,6 +56,101 @@
                       "example": "online"
                     }
                   }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/municipios": {
+      "get": {
+        "tags": [
+          "Municipios"
+        ],
+        "summary": "Lista municipios ou filtra por nome, bioma e classificacao IMRI",
+        "parameters": [
+          {
+            "name": "nome",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Filtra municipios pelo nome"
+          },
+          {
+            "name": "bioma",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Filtra municipios pelo bioma mais afetado"
+          },
+          {
+            "name": "classificacao",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Filtra municipios pela classificacao IMRI"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Lista de municipios retornada com sucesso",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Municipio"
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erro interno ao buscar municipios",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/municipios/ranking": {
+      "get": {
+        "tags": [
+          "Municipios"
+        ],
+        "summary": "Retorna o ranking dos municipios com maior numero de focos",
+        "responses": {
+          "200": {
+            "description": "Ranking retornado com sucesso",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Municipio"
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erro interno ao gerar ranking",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -1237,6 +1336,104 @@
   },
   "components": {
     "schemas": {
+      "Municipio": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "example": 1
+          },
+          "municipio": {
+            "type": "string",
+            "example": "Divinopolis"
+          },
+          "numero_focos": {
+            "type": "integer",
+            "example": 124
+          },
+          "lat": {
+            "type": "number",
+            "format": "float",
+            "example": -20.1383
+          },
+          "lon": {
+            "type": "number",
+            "format": "float",
+            "example": -44.8839
+          },
+          "imri": {
+            "type": "number",
+            "format": "float",
+            "example": 0.72
+          },
+          "classificacao_imri": {
+            "type": "string",
+            "example": "Alta"
+          },
+          "bioma_mais_afetado": {
+            "type": "string",
+            "example": "Cerrado"
+          },
+          "mes_mais_afetado": {
+            "type": "string",
+            "example": "Setembro"
+          },
+          "focos_2015": {
+            "type": "integer",
+            "example": 8
+          },
+          "focos_2016": {
+            "type": "integer",
+            "example": 11
+          },
+          "focos_2017": {
+            "type": "integer",
+            "example": 10
+          },
+          "focos_2018": {
+            "type": "integer",
+            "example": 9
+          },
+          "focos_2019": {
+            "type": "integer",
+            "example": 12
+          },
+          "focos_2020": {
+            "type": "integer",
+            "example": 14
+          },
+          "focos_2021": {
+            "type": "integer",
+            "example": 13
+          },
+          "focos_2022": {
+            "type": "integer",
+            "example": 15
+          },
+          "focos_2023": {
+            "type": "integer",
+            "example": 16
+          },
+          "focos_2024": {
+            "type": "integer",
+            "example": 9
+          },
+          "focos_2025": {
+            "type": "integer",
+            "example": 7
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          }
+        }
+      },
       "CreateReporteInput": {
         "type": "object",
         "required": [
