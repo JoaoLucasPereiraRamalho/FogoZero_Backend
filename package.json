@@ -9,7 +9,8 @@
     "prisma:generate": "prisma generate",
     "prisma:migrate:dev": "prisma migrate dev",
     "test": "node --test --test-reporter=spec",
-    "test:watch": "node --test --watch"
+    "test:watch": "node --test --watch",
+    "db:seed": "node src/scripts/seed.js"
   },
   "keywords": [],
   "author": "",

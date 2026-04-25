@@ -30,8 +30,38 @@ async function listRegistrosByBioma(req, res, next) {
   }
 }
 
+async function getDistribuicao(req, res, next) {
+  try {
+    const result = await biomaService.getDistribuicao(req.query);
+    return res.status(200).json(result);
+  } catch (error) {
+    return next(error);
+  }
+}
+
+async function getEvolucaoMensal(req, res, next) {
+  try {
+    const result = await biomaService.getEvolucaoMensal(req.params, req.query);
+    return res.status(200).json(result);
+  } catch (error) {
+    return next(error);
+  }
+}
+
+async function getEstatisticas(req, res, next) {
+  try {
+    const result = await biomaService.getEstatisticas(req.params, req.query);
+    return res.status(200).json(result);
+  } catch (error) {
+    return next(error);
+  }
+}
+
 module.exports = {
   listBiomas,
   getBiomaById,
   listRegistrosByBioma,
+  getDistribuicao,
+  getEvolucaoMensal,
+  getEstatisticas,
 };

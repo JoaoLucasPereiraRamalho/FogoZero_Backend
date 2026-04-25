@@ -15,6 +15,13 @@ services:
     networks:
       - fogozero_net
 
+  ia:
+    build:
+      context: ./src/services
+      dockerfile: Dockerfile.ia
+    networks:
+      - fogozero_net
+
   api:
     build: .
     ports:
@@ -22,6 +29,8 @@ services:
     depends_on:
       db:
         condition: service_healthy
+      ia:
+        condition: service_started
     environment:
       NODE_ENV: production
       PORT: 3000
@@ -30,10 +39,11 @@ services:
       JWT_EXPIRATION: ${JWT_EXPIRATION}
       BCRYPT_ROUNDS: ${BCRYPT_ROUNDS}
       SUPABASE_URL: ${SUPABASE_URL}
-      IA_SERVICE_URL: ${IA_SERVICE_URL}
+      # Aponta para o serviço ia interno — não usa .env aqui
+      IA_SERVICE_URL: http://ia:8000
       FRONTEND_URL: ${FRONTEND_URL}
-    # Executa as migrations pendentes antes de iniciar o servidor
-    command: sh -c "npx prisma migrate deploy && node src/server.js"
+    # Executa migrations, popula o banco (seed idempotente) e inicia o servidor
+    command: sh -c "npx prisma migrate deploy && node src/scripts/seed.js && node src/server.js"
     networks:
       - fogozero_net
 

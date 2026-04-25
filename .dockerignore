@@ -23,3 +23,10 @@ instrucaoDadosSupabase.txt
 # Logs
 *.log
 npm-debug.log*
+
+# Arquivos do microserviço Python — têm imagem própria (Dockerfile.ia)
+src/services/aiservice.py
+src/services/reconhecimento_incendio.keras
+src/services/Dockerfile.ia
+src/services/requirements.txt
+src/services/.venv

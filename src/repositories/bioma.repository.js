@@ -59,9 +59,42 @@ async function countRegistrosByBiomaId({ biomaId, where }) {
   });
 }
 
+async function sumFocosAnuaisByBiomaId({ biomaId, ano }) {
+  const result = await prisma.registroQueimada.aggregate({
+    where: {
+      regiao: { id_tipo_regiao: biomaId },
+      data_registro: {
+        gte: new Date(ano, 0, 1),
+        lte: new Date(ano, 11, 31, 23, 59, 59),
+      },
+    },
+    _sum: { quantidade_focos: true },
+  });
+  return result._sum.quantidade_focos ?? 0;
+}
+
+async function findRegistrosMensaisByBiomaId({ biomaId, ano }) {
+  return prisma.registroQueimada.findMany({
+    where: {
+      regiao: { id_tipo_regiao: biomaId },
+      data_registro: {
+        gte: new Date(ano, 0, 1),
+        lte: new Date(ano, 11, 31, 23, 59, 59),
+      },
+    },
+    select: {
+      data_registro: true,
+      quantidade_focos: true,
+    },
+    orderBy: { data_registro: "asc" },
+  });
+}
+
 module.exports = {
   findAll,
   findById,
   findRegistrosByBiomaId,
   countRegistrosByBiomaId,
+  sumFocosAnuaisByBiomaId,
+  findRegistrosMensaisByBiomaId,
 };
