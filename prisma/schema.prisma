@@ -144,6 +144,8 @@ model Notificacao {
   @@index([usuarioId])
   @@index([lido])
   @@map("notificacoes")
+}
+
 model MunicipioMG {
   id                  Int      @id @default(autoincrement())
   municipio           String   @unique

@@ -367,12 +367,16 @@ async function registrarNovoReporte(dados) {
     id_status_analise_ia: dados.id_status_analise_ia ?? 1,
     id_status_analise_admin: dados.id_status_analise_admin ?? 1,
   };
+}
+
 async function registerAndCreateFirstReporte(input) {
   try {
     const data = primeiroReporteSchema.parse(input);
     const email = data.usuario.email.toLowerCase();
 
-    const existingUser = await prisma.usuario.findUnique({ where: { email } });
+    const existingUser = await prisma.usuario.findUnique({
+      where: { email },
+    });
     if (existingUser) {
       throw new AppError("Email ja cadastrado.", 409);
     }

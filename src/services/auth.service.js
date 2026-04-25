@@ -3,6 +3,8 @@ const jwt = require("jsonwebtoken");
 const { ZodError } = require("zod");
 const AppError = require("../utils/appError");
 const authRepository = require("../repositories/auth.repository");
+const mailService = require("./mail.service");
+
 const {
   registerSchema,
   loginSchema,
@@ -113,10 +115,14 @@ async function logout(authenticatedUser) {
 
 async function forgotPassword(input) {
   try {
+    // 1. Validação dos dados de entrada (Zod)
     const data = forgotPasswordSchema.parse(input);
     const email = data.email.toLowerCase();
 
+    // 2. Busca o usuário no banco
     const user = await authRepository.findByEmail(email);
+
+    // Resposta padrão (Segurança: não confirma se o e-mail existe)
     const response = {
       mensagem:
         "Se o email estiver cadastrado, voce recebera instrucoes para redefinir a senha.",
@@ -126,12 +132,33 @@ async function forgotPassword(input) {
       return response;
     }
 
+    // 3. Gera o token e o link de reset
     const resetToken = signPasswordResetToken(user);
     const baseUrl = process.env.FRONTEND_URL || "http://localhost:5173";
-    const resetLink = `${baseUrl}/reset-password?token=${encodeURIComponent(
-      resetToken,
-    )}`;
+    const resetLink = `${baseUrl}/reset-password?token=${encodeURIComponent(resetToken)}`;
 
+    // 4. ENVIO REAL DO E-MAIL
+    // Aqui chamamos o seu serviço de e-mail (ajuste conforme o nome do seu service)
+    try {
+      await mailService.sendMail({
+        to: email,
+        subject: "Recuperação de Senha - FogoZero",
+        html: `
+          <h1>Recuperação de Senha</h1>
+          <p>Olá, ${user.nome}.</p>
+          <p>Você solicitou a redefinição de senha para sua conta no FogoZero.</p>
+          <p>Clique no link abaixo para criar uma nova senha (válido por 1 hora):</p>
+          <a href="${resetLink}" target="_blank">${resetLink}</a>
+          <br/><br/>
+          <p>Se você não solicitou isso, ignore este e-mail.</p>
+        `,
+      });
+    } catch (mailError) {
+      // Logamos o erro mas não travamos o fluxo para o usuário
+      console.error("Erro ao enviar e-mail de recuperação:", mailError);
+    }
+
+    // 5. Facilitação para Desenvolvimento
     if (process.env.NODE_ENV !== "production") {
       return {
         ...response,
@@ -149,7 +176,6 @@ async function forgotPassword(input) {
         mapZodError(error),
       );
     }
-
     throw error;
   }
 }
