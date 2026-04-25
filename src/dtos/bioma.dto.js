@@ -11,7 +11,17 @@ const registrosQuerySchema = z.object({
   data_fim: z.coerce.date().optional(),
 });
 
+const anoQuerySchema = z.object({
+  ano: z.coerce
+    .number()
+    .int()
+    .min(2015, "Ano minimo permitido: 2015.")
+    .max(2030, "Ano maximo permitido: 2030.")
+    .optional(),
+});
+
 module.exports = {
   biomaIdParamSchema,
   registrosQuerySchema,
+  anoQuerySchema,
 };
