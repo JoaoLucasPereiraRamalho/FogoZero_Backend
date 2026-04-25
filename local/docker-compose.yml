@@ -1,0 +1,19 @@
+version: "3.8"
+
+services:
+  db:
+    # Mudamos de 'latest' para '16'
+    image: postgres:16
+    container_name: fogozero-db
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin
+      POSTGRES_DB: fogozero
+    ports:
+      - "5433:5432"
+    volumes:
+      - fogozero_pgdata:/var/lib/postgresql/data
+    restart: unless-stopped
+
+volumes:
+  fogozero_pgdata:

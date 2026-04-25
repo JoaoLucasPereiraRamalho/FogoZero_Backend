@@ -1,0 +1,124 @@
+# 🔥 INSTRUÇÕES PARA RODAR O BACKEND (FOGOZERO)
+
+## 📌 1. Criar arquivo `.env`
+
+Como o `.env` está no `.gitignore`, cada pessoa do time precisa criar manualmente um arquivo chamado:
+
+```
+.env
+```
+
+na raiz do projeto.
+
+---
+
+## 📌 2. Copiar e colar este conteúdo dentro do `.env`
+
+```
+DATABASE_URL="postgresql://postgres:7854@localhost:5432/meubanco"
+SUPABASE_KEY="sb_publishable_cnUfIdTF6CCXpDOMwqGcSg_AwO6pdrl"
+SUPABASE_URL="https://uwlshbxastsmdczwqpzj.supabase.co"
+```
+
+---
+
+## 📌 3. Instalar dependências
+
+No terminal:
+
+```
+npm install
+```
+
+---
+
+## 📌 4. Rodar o backend
+
+```
+node src/server.js
+```
+
+ou (recomendado):
+
+```
+npx nodemon src/server.js
+```
+
+---
+
+## 📌 5. Testar se está funcionando
+
+Acessar no navegador ou Insomnia:
+
+```
+http://localhost:3000/ping
+```
+
+Deve retornar:
+
+```
+{
+  "mensagem": "A API do FogoZero MG está no ar! 🚀",
+  "status": "online"
+}
+```
+
+---
+
+## 📌 6. Endpoint dos gráficos e mapas
+
+Para buscar os assets (gráfico + mapa) de um município:
+
+```
+GET http://localhost:3000/api/graficos/NOME_DO_MUNICIPIO/assets
+```
+
+### 🔹 Exemplo:
+
+```
+http://localhost:3000/api/graficos/Divinopolis/assets
+```
+
+---
+
+## 📌 7. Resposta esperada
+
+```
+{
+  "municipio": "Divinopolis",
+  "nome_arquivo": "divinopolis",
+  "grafico_url": "https://uwlshbxastsmdczwqpzj.supabase.co/storage/v1/object/public/graficos/municipios/divinopolis.png",
+  "mapa_url": "https://uwlshbxastsmdczwqpzj.supabase.co/storage/v1/object/public/mapas/municipios/divinopolis.html"
+}
+```
+
+---
+
+## ⚠️ IMPORTANTE
+
+* Os nomes dos municípios precisam ser válidos
+* O backend normaliza automaticamente (acento, espaço, etc.)
+* Os arquivos estão armazenados no Supabase Storage
+
+---
+
+## 🚀 RESUMO
+
+1. Criar `.env`
+2. Rodar `npm install`
+3. Rodar servidor
+4. Testar rota `/api/graficos/:nome/assets`
+
+---
+
+## 🔥 OBS
+
+Se não funcionar:
+
+* verificar se o `.env` foi criado corretamente
+* verificar se o servidor está rodando
+* verificar se o nome do município está correto
+
+---
+
+Pronto 👍

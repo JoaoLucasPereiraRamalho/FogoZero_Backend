@@ -1,0 +1,55 @@
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - fogozero_net
+
+  ia:
+    build:
+      context: ./src/services
+      dockerfile: Dockerfile.ia
+    networks:
+      - fogozero_net
+
+  api:
+    build: .
+    ports:
+      - "${PORT:-3000}:3000"
+    depends_on:
+      db:
+        condition: service_healthy
+      ia:
+        condition: service_started
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      DATABASE_URL: postgresql://${DB_USER}:${DB_PASSWORD}@db:5432/${DB_NAME}
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_EXPIRATION: ${JWT_EXPIRATION}
+      BCRYPT_ROUNDS: ${BCRYPT_ROUNDS}
+      SUPABASE_URL: ${SUPABASE_URL}
+      # Aponta para o serviço ia interno — não usa .env aqui
+      IA_SERVICE_URL: http://ia:8000
+      FRONTEND_URL: ${FRONTEND_URL}
+    # Executa migrations, popula o banco (seed idempotente) e inicia o servidor
+    command: sh -c "npx prisma migrate deploy && node prisma/seed.js && node src/server.js"
+    networks:
+      - fogozero_net
+
+volumes:
+  pgdata:
+
+networks:
+  fogozero_net:
+    driver: bridge
