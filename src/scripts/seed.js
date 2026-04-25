@@ -4,6 +4,7 @@
  *   2. Regiao      (áreas de preservação por bioma)
  *   3. RegistroQueimada (focos mensais por região — dados de 2022 a 2025)
  *   4. MunicipioMG (importação do CSV dados_municipios.csv)
+ *   5. Glossario   (termos técnicos do contexto ambiental/queimadas)
  *
  * Seguro para rodar múltiplas vezes: verifica existência antes de inserir.
  */
@@ -133,6 +134,141 @@ async function importarMunicipiosCSV() {
   });
 }
 
+// ─── 5. Glossário ────────────────────────────────────────────────────────────
+
+const GLOSSARIO = [
+  {
+    termo: "Foco de Incêndio",
+    definicao:
+      "Ponto detectado por satélite onde há emissão de calor compatível com queima de vegetação. Cada foco representa uma área ativa de queimada no momento da detecção.",
+  },
+  {
+    termo: "Queimada",
+    definicao:
+      "Combustão de vegetação, seja de forma natural (raios) ou provocada pelo ser humano. Pode ser controlada, usada em práticas agrícolas, ou descontrolada, causando danos ambientais.",
+  },
+  {
+    termo: "Bioma",
+    definicao:
+      "Grande região do planeta com características climáticas, vegetais e animais semelhantes. Em Minas Gerais predominam o Cerrado, a Mata Atlântica e a Caatinga.",
+  },
+  {
+    termo: "Cerrado",
+    definicao:
+      "Bioma brasileiro de savana com grande biodiversidade, conhecido como 'berço das águas'. É o bioma mais afetado por queimadas em Minas Gerais, especialmente entre julho e outubro.",
+  },
+  {
+    termo: "Mata Atlântica",
+    definicao:
+      "Um dos biomas mais ricos em biodiversidade do mundo, presente na faixa litorânea e serrana de Minas Gerais. Atualmente restam menos de 12% de sua cobertura original.",
+  },
+  {
+    termo: "Caatinga",
+    definicao:
+      "Bioma exclusivamente brasileiro, caracterizado por vegetação adaptada à seca. No norte de Minas Gerais, sofre com períodos prolongados de estiagem que favorecem incêndios.",
+  },
+  {
+    termo: "IMRI",
+    definicao:
+      "Índice Municipal de Risco de Incêndio. Valor calculado para cada município com base no histórico de focos, bioma predominante e fatores climáticos. Quanto maior o IMRI, maior o risco.",
+  },
+  {
+    termo: "INPE",
+    definicao:
+      "Instituto Nacional de Pesquisas Espaciais. Órgão brasileiro responsável pelo monitoramento de queimadas por satélite e pela divulgação dos dados oficiais de focos de incêndio no país.",
+  },
+  {
+    termo: "Área de Preservação",
+    definicao:
+      "Território legalmente protegido com restrições de uso para conservar a biodiversidade, recursos hídricos e ecossistemas. Exemplos: Parques Nacionais, APAs e Reservas Biológicas.",
+  },
+  {
+    termo: "APA",
+    definicao:
+      "Área de Proteção Ambiental. Unidade de conservação de uso sustentável que permite a presença de populações humanas e atividades econômicas controladas, protegendo atributos naturais relevantes.",
+  },
+  {
+    termo: "Mapa de Calor",
+    definicao:
+      "Visualização geográfica que representa a intensidade de focos de incêndio por região. Cores mais quentes (vermelho/laranja) indicam maior concentração de ocorrências.",
+  },
+  {
+    termo: "Estação Seca",
+    definicao:
+      "Período do ano com baixa precipitação e umidade relativa do ar reduzida. No Brasil central, ocorre entre maio e outubro, sendo a época de maior risco de queimadas.",
+  },
+  {
+    termo: "Reporte",
+    definicao:
+      "Registro de ocorrência enviado por um usuário da plataforma ao identificar um foco de incêndio ou queimada. Contribui para o monitoramento colaborativo e pode alertar autoridades.",
+  },
+  {
+    termo: "Ranking Estadual",
+    definicao:
+      "Classificação dos municípios de Minas Gerais por número de focos de incêndio registrados. Indica quais localidades concentram maior atividade de queimadas no período analisado.",
+  },
+  {
+    termo: "Variação no Período",
+    definicao:
+      "Diferença percentual no número de focos registrados em comparação ao período anterior. Valores positivos indicam aumento das ocorrências; valores negativos indicam redução.",
+  },
+  {
+    termo: "Tendência",
+    definicao:
+      "Comportamento geral dos focos de incêndio ao longo do período analisado. Pode ser classificada como Crescimento (aumento), Queda (redução) ou Estável (sem variação significativa).",
+  },
+  {
+    termo: "Monitoramento Ambiental",
+    definicao:
+      "Acompanhamento sistemático das condições do meio ambiente com uso de tecnologia. No FogoZero MG, inclui análise de focos por satélite, registros históricos e reportes da comunidade.",
+  },
+  {
+    termo: "Fonte de Dados",
+    definicao:
+      "Origem das informações utilizadas na plataforma. Os dados de focos de incêndio provêm do sistema QUEIMADAS do INPE, atualizado diariamente com imagens de satélites.",
+  },
+  {
+    termo: "Coordenadas Geográficas",
+    definicao:
+      "Par de valores (latitude e longitude) que determina com precisão a localização de um foco de incêndio no mapa. Essencial para direcionar equipes de combate ao local exato da ocorrência.",
+  },
+  {
+    termo: "Classificação IMRI",
+    definicao:
+      "Categoria de risco atribuída a um município com base no valor do IMRI. As categorias são Baixo, Médio, Alto e Crítico, orientando a priorização de ações preventivas e de fiscalização ambiental.",
+  },
+  {
+    termo: "Região de Preservação",
+    definicao:
+      "Área geográfica delimitada dentro de um bioma para fins de conservação, como parques estaduais e APAs. O monitoramento de focos por região permite identificar quais áreas protegidas estão mais vulneráveis.",
+  },
+  {
+    termo: "Sazonalidade",
+    definicao:
+      "Padrão cíclico anual de variação no número de focos de incêndio. No Brasil central, agosto, setembro e outubro concentram o pico de ocorrências, enquanto os meses chuvosos (dezembro a março) registram os menores índices.",
+  },
+  {
+    termo: "Estação Chuvosa",
+    definicao:
+      "Período com alta precipitação e umidade elevada, geralmente de novembro a março no Brasil central. A vegetação úmida reduz significativamente o risco de propagação de incêndios nessa época.",
+  },
+  {
+    termo: "Prevenção de Incêndios",
+    definicao:
+      "Conjunto de ações que visam reduzir a ocorrência e o impacto de queimadas. Inclui educação ambiental, fiscalização de queimas ilegais, criação de aceiros e monitoramento contínuo por satélite.",
+  },
+  {
+    termo: "Combate a Incêndios",
+    definicao:
+      "Operações de campo realizadas pelo Corpo de Bombeiros e brigadas ambientais para conter e extinguir focos ativos. Envolve técnicas como contra-fogo, abafamento e uso de aeronaves de combate.",
+  },
+  {
+    termo: "Município",
+    definicao:
+      "Unidade territorial de Minas Gerais monitorada pela plataforma. Cada município possui dados de focos históricos, bioma predominante, mês de maior risco e índice IMRI calculado para orientar políticas de prevenção.",
+  },
+];
+
 // ─── Runner principal ──────────────────────────────────────────────────────
 
 async function seed() {
@@ -237,6 +373,23 @@ async function seed() {
     }
     console.log(`   ✅ ${inseridos} município(s) importado(s) do CSV\n`);
   }
+
+  // 5. Glossário
+  console.log("📍 [5/5] Inserindo termos do glossário...");
+  const termosExistentes = await prisma.glossario.findMany({
+    select: { termo: true },
+  });
+  const termosExistentesSet = new Set(termosExistentes.map((t) => t.termo));
+  const novosTermos = GLOSSARIO.filter(
+    (t) => !termosExistentesSet.has(t.termo),
+  );
+
+  if (novosTermos.length > 0) {
+    await prisma.glossario.createMany({ data: novosTermos });
+  }
+  console.log(
+    `   ✅ ${novosTermos.length} termo(s) inserido(s) (${termosExistentes.length} já existiam)\n`,
+  );
 
   console.log("🎉 Seed concluído com sucesso!");
 }
