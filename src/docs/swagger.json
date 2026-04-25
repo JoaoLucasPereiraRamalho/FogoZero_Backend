@@ -39,6 +39,10 @@
     {
       "name": "Graficos",
       "description": "Endpoints para acesso a graficos e mapas de focos por municipio"
+    },
+    {
+      "name": "Usuarios",
+      "description": "Endpoints de gestao de perfil de usuarios"
     }
   ],
   "paths": {
@@ -1532,6 +1536,189 @@
           }
         }
       }
+    },
+    "/api/usuarios": {
+      "get": {
+        "tags": ["Usuarios"],
+        "summary": "Lista todos os usuarios (somente admin)",
+        "security": [{"BearerAuth": []}],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "page",
+            "schema": {"type": "integer", "default": 1},
+            "description": "Numero da pagina"
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "schema": {"type": "integer", "default": 20, "maximum": 100},
+            "description": "Quantidade de itens por pagina"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Lista paginada de usuarios",
+            "content": {
+              "application/json": {
+                "schema": {"$ref": "#/components/schemas/PagedUsuariosResponse"}
+              }
+            }
+          },
+          "401": {"$ref": "#/components/responses/Unauthorized"},
+          "403": {"$ref": "#/components/responses/Forbidden"}
+        }
+      }
+    },
+    "/api/usuarios/{id}": {
+      "get": {
+        "tags": ["Usuarios"],
+        "summary": "Retorna perfil de um usuario",
+        "description": "Proprio usuario ou administrador pode acessar.",
+        "security": [{"BearerAuth": []}],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {"type": "integer"},
+            "description": "ID do usuario"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Perfil do usuario",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "usuario": {"$ref": "#/components/schemas/UsuarioPublic"}
+                  }
+                }
+              }
+            }
+          },
+          "401": {"$ref": "#/components/responses/Unauthorized"},
+          "403": {"$ref": "#/components/responses/Forbidden"},
+          "404": {"$ref": "#/components/responses/NotFound"}
+        }
+      },
+      "patch": {
+        "tags": ["Usuarios"],
+        "summary": "Atualiza perfil de um usuario",
+        "description": "Proprio usuario ou administrador pode atualizar. Administradores tambem podem alterar o campo 'tipo'.",
+        "security": [{"BearerAuth": []}],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {"type": "integer"},
+            "description": "ID do usuario"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {"$ref": "#/components/schemas/UsuarioUpdate"}
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Usuario atualizado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "usuario": {"$ref": "#/components/schemas/UsuarioPublic"}
+                  }
+                }
+              }
+            }
+          },
+          "400": {"$ref": "#/components/responses/BadRequest"},
+          "401": {"$ref": "#/components/responses/Unauthorized"},
+          "403": {"$ref": "#/components/responses/Forbidden"},
+          "404": {"$ref": "#/components/responses/NotFound"}
+        }
+      },
+      "delete": {
+        "tags": ["Usuarios"],
+        "summary": "Remove conta de um usuario",
+        "description": "Proprio usuario ou administrador pode remover a conta.",
+        "security": [{"BearerAuth": []}],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {"type": "integer"},
+            "description": "ID do usuario"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Conta removida com sucesso",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "usuario": {"$ref": "#/components/schemas/UsuarioPublic"}
+                  }
+                }
+              }
+            }
+          },
+          "401": {"$ref": "#/components/responses/Unauthorized"},
+          "403": {"$ref": "#/components/responses/Forbidden"},
+          "404": {"$ref": "#/components/responses/NotFound"}
+        }
+      }
+    },
+    "/api/usuarios/{id}/reportes": {
+      "get": {
+        "tags": ["Usuarios"],
+        "summary": "Historico de reportes de um usuario",
+        "description": "Proprio usuario ou administrador pode acessar.",
+        "security": [{"BearerAuth": []}],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {"type": "integer"},
+            "description": "ID do usuario"
+          },
+          {
+            "in": "query",
+            "name": "page",
+            "schema": {"type": "integer", "default": 1}
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "schema": {"type": "integer", "default": 20, "maximum": 100}
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Historico de reportes paginado",
+            "content": {
+              "application/json": {
+                "schema": {"$ref": "#/components/schemas/PagedReportesResponse"}
+              }
+            }
+          },
+          "401": {"$ref": "#/components/responses/Unauthorized"},
+          "403": {"$ref": "#/components/responses/Forbidden"},
+          "404": {"$ref": "#/components/responses/NotFound"}
+        }
+      }
     }
   },
   "components": {
@@ -1927,6 +2114,45 @@
           },
           "status_analise_admin": {
             "$ref": "#/components/schemas/StatusResumo"
+          }
+        }
+      },
+      "UsuarioPublic": {
+        "type": "object",
+        "properties": {
+          "id": {"type": "integer", "example": 5},
+          "nome": {"type": "string", "example": "Maria Silva"},
+          "email": {"type": "string", "format": "email", "example": "maria@email.com"},
+          "telefone": {"type": "string", "nullable": true, "example": "(31) 99999-0000"},
+          "tipo": {"type": "string", "example": "usuario"},
+          "id_regiao": {"type": "integer", "nullable": true, "example": 2},
+          "data_cadastro": {"type": "string", "example": "24/04/2026"}
+        }
+      },
+      "UsuarioUpdate": {
+        "type": "object",
+        "properties": {
+          "nome": {"type": "string", "minLength": 2, "maxLength": 120, "example": "Maria Souza"},
+          "telefone": {"type": "string", "example": "(31) 98888-1111"},
+          "id_regiao": {"type": "integer", "example": 3},
+          "tipo": {"type": "string", "enum": ["usuario", "administrador"], "description": "Somente administradores podem alterar este campo"}
+        }
+      },
+      "PagedUsuariosResponse": {
+        "type": "object",
+        "properties": {
+          "dados": {
+            "type": "array",
+            "items": {"$ref": "#/components/schemas/UsuarioPublic"}
+          },
+          "meta": {
+            "type": "object",
+            "properties": {
+              "pagina": {"type": "integer"},
+              "limite": {"type": "integer"},
+              "total": {"type": "integer"},
+              "total_paginas": {"type": "integer"}
+            }
           }
         }
       },

@@ -112,10 +112,15 @@ async function baixarImagem(url) {
 
 //função que chama o modelo de IA para analisar a imagem e retornar o resultado da analise
 async function analisarImagemComIA(imagemPath) {
+  const iaServiceUrl = process.env.IA_SERVICE_URL;
+  if (!iaServiceUrl) {
+    throw new AppError("IA_SERVICE_URL nao configurada no ambiente.", 500);
+  }
+
   const formData = new FormData();
   formData.append("file", fs.createReadStream(imagemPath));
 
-  const response = await axios.post("http://localhost:8000/predict", formData, {
+  const response = await axios.post(`${iaServiceUrl}/predict`, formData, {
     headers: formData.getHeaders(),
   });
 
@@ -277,7 +282,12 @@ async function listAll(query) {
   }
 }
 
-async function listByUsuario(params, query, authenticatedUserId) {
+async function listByUsuario(
+  params,
+  query,
+  authenticatedUserId,
+  isAdmin = false,
+) {
   try {
     if (!authenticatedUserId) {
       throw new AppError("Usuario nao autenticado.", 401);
@@ -285,7 +295,7 @@ async function listByUsuario(params, query, authenticatedUserId) {
 
     const { usuario_id } = usuarioIdParamSchema.parse(params);
 
-    if (authenticatedUserId !== usuario_id) {
+    if (!isAdmin && authenticatedUserId !== usuario_id) {
       throw new AppError("Acesso negado para este recurso.", 403);
     }
 

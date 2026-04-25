@@ -1,0 +1,25 @@
+# Dependências — reinstaladas no build
+node_modules
+
+# Git
+.git
+.gitignore
+
+# Variáveis de ambiente — NUNCA incluir no contexto de build
+.env
+.env.*
+
+# Testes — não necessários em produção
+tests
+
+# Arquivos de desenvolvimento
+prisma.config.ts
+nodemon.json
+
+# Documentação e arquivos avulsos
+*.md
+instrucaoDadosSupabase.txt
+
+# Logs
+*.log
+npm-debug.log*

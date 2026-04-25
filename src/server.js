@@ -12,6 +12,7 @@ const notificacaoRoutes = require("./routes/notificacao.routes");
 const municipioRoutes = require("./routes/municipios.routes");
 const graficosRoutes = require("./routes/graficos.routes");
 const biomaRoutes = require("./routes/bioma.routes");
+const usuarioRoutes = require("./routes/usuario.routes");
 const errorHandler = require("./middlewares/errorHandler");
 const setupSwagger = require("./swagger");
 
@@ -37,6 +38,7 @@ app.use("/api/notificacoes", notificacaoRoutes);
 app.use("/api/municipios", municipioRoutes);
 app.use("/api/graficos", graficosRoutes);
 app.use("/api/biomas", biomaRoutes);
+app.use("/api/usuarios", usuarioRoutes);
 setupSwagger(app);
 app.use(errorHandler);
 
