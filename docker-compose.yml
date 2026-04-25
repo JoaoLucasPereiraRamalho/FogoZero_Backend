@@ -43,7 +43,7 @@ services:
       IA_SERVICE_URL: http://ia:8000
       FRONTEND_URL: ${FRONTEND_URL}
     # Executa migrations, popula o banco (seed idempotente) e inicia o servidor
-    command: sh -c "npx prisma migrate deploy && node src/scripts/seed.js && node src/server.js"
+    command: sh -c "npx prisma migrate deploy && node prisma/seed.js && node src/server.js"
     networks:
       - fogozero_net
 

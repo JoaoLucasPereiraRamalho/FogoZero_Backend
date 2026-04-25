@@ -10,7 +10,10 @@
     "prisma:migrate:dev": "prisma migrate dev",
     "test": "node --test --test-reporter=spec",
     "test:watch": "node --test --watch",
-    "db:seed": "node src/scripts/seed.js"
+    "db:seed": "node prisma/seed.js"
+  },
+  "prisma": {
+    "seed": "node prisma/seed.js"
   },
   "keywords": [],
   "author": "",
@@ -39,8 +42,5 @@
     "dotenv": "^17.4.2",
     "nodemon": "^3.1.14",
     "prisma": "^7.5.0"
-  },
-  "prisma": {
-    "seed": "node prisma/seed.js"
   }
 }
