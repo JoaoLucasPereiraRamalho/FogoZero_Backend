@@ -98,5 +98,3 @@ module.exports = {
   sumFocosAnuaisByBiomaId,
   findRegistrosMensaisByBiomaId,
 };
-  countRegistrosByBiomaId,
-};

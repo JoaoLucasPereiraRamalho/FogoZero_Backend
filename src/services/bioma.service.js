@@ -8,13 +8,33 @@ const {
 } = require("../dtos/bioma.dto");
 
 const MESES_NOMES = [
-  "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
-  "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro",
+  "Janeiro",
+  "Fevereiro",
+  "Março",
+  "Abril",
+  "Maio",
+  "Junho",
+  "Julho",
+  "Agosto",
+  "Setembro",
+  "Outubro",
+  "Novembro",
+  "Dezembro",
 ];
 
 const MESES_ABREV = [
-  "Jan", "Fev", "Mar", "Abr", "Mai", "Jun",
-  "Jul", "Ago", "Set", "Out", "Nov", "Dez",
+  "Jan",
+  "Fev",
+  "Mar",
+  "Abr",
+  "Mai",
+  "Jun",
+  "Jul",
+  "Ago",
+  "Set",
+  "Out",
+  "Nov",
+  "Dez",
 ];
 
 function mapZodError(error) {
@@ -145,7 +165,10 @@ async function getDistribuicao(query) {
       biomas.map(async (b) => {
         const [totalAtual, totalAnterior] = await Promise.all([
           biomaRepository.sumFocosAnuaisByBiomaId({ biomaId: b.id, ano }),
-          biomaRepository.sumFocosAnuaisByBiomaId({ biomaId: b.id, ano: ano - 1 }),
+          biomaRepository.sumFocosAnuaisByBiomaId({
+            biomaId: b.id,
+            ano: ano - 1,
+          }),
         ]);
         return { id: b.id, descricao: b.descricao, totalAtual, totalAnterior };
       }),
@@ -166,13 +189,22 @@ async function getDistribuicao(query) {
             : 0,
         variacao_percentual:
           b.totalAnterior > 0
-            ? Number((((b.totalAtual - b.totalAnterior) / b.totalAnterior) * 100).toFixed(1))
+            ? Number(
+                (
+                  ((b.totalAtual - b.totalAnterior) / b.totalAnterior) *
+                  100
+                ).toFixed(1),
+              )
             : null,
       })),
     };
   } catch (error) {
     if (error instanceof ZodError) {
-      throw new AppError("Parametros de consulta invalidos.", 400, mapZodError(error));
+      throw new AppError(
+        "Parametros de consulta invalidos.",
+        400,
+        mapZodError(error),
+      );
     }
     throw error;
   }
@@ -186,7 +218,10 @@ async function getEvolucaoMensal(params, query) {
     const bioma = await biomaRepository.findById(id);
     if (!bioma) throw new AppError("Bioma nao encontrado.", 404);
 
-    const registros = await biomaRepository.findRegistrosMensaisByBiomaId({ biomaId: id, ano });
+    const registros = await biomaRepository.findRegistrosMensaisByBiomaId({
+      biomaId: id,
+      ano,
+    });
 
     const porMes = Array.from({ length: 12 }, (_, i) => ({
       mes: i + 1,
@@ -206,7 +241,11 @@ async function getEvolucaoMensal(params, query) {
     };
   } catch (error) {
     if (error instanceof ZodError) {
-      throw new AppError("Parametros de consulta invalidos.", 400, mapZodError(error));
+      throw new AppError(
+        "Parametros de consulta invalidos.",
+        400,
+        mapZodError(error),
+      );
     }
     throw error;
   }
@@ -220,7 +259,10 @@ async function getEstatisticas(params, query) {
     const bioma = await biomaRepository.findById(id);
     if (!bioma) throw new AppError("Bioma nao encontrado.", 404);
 
-    const registros = await biomaRepository.findRegistrosMensaisByBiomaId({ biomaId: id, ano });
+    const registros = await biomaRepository.findRegistrosMensaisByBiomaId({
+      biomaId: id,
+      ano,
+    });
 
     const porMes = Array.from({ length: 12 }, (_, i) => ({
       mes: i + 1,
@@ -245,8 +287,12 @@ async function getEstatisticas(params, query) {
       };
     }
 
-    const maior = comDados.reduce((a, b) => (b.total_focos > a.total_focos ? b : a));
-    const menor = comDados.reduce((a, b) => (b.total_focos < a.total_focos ? b : a));
+    const maior = comDados.reduce((a, b) =>
+      b.total_focos > a.total_focos ? b : a,
+    );
+    const menor = comDados.reduce((a, b) =>
+      b.total_focos < a.total_focos ? b : a,
+    );
     const tendencia = calcularTendencia(porMes);
 
     return {
@@ -258,7 +304,11 @@ async function getEstatisticas(params, query) {
     };
   } catch (error) {
     if (error instanceof ZodError) {
-      throw new AppError("Parametros de consulta invalidos.", 400, mapZodError(error));
+      throw new AppError(
+        "Parametros de consulta invalidos.",
+        400,
+        mapZodError(error),
+      );
     }
     throw error;
   }
@@ -271,5 +321,4 @@ module.exports = {
   getDistribuicao,
   getEvolucaoMensal,
   getEstatisticas,
-};
 };
