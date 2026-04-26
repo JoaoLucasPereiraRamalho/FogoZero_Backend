@@ -5,6 +5,7 @@ const router = express.Router();
 
 // Rotas estáticas devem vir ANTES de /:id para evitar conflito de parâmetro
 router.get("/distribuicao", biomaController.getDistribuicao);
+router.get("/anos-disponiveis", biomaController.getAnosDisponiveis);
 
 router.get("/", biomaController.listBiomas);
 router.get("/:id", biomaController.getBiomaById);

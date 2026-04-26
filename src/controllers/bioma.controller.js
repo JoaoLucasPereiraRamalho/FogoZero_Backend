@@ -57,6 +57,15 @@ async function getEstatisticas(req, res, next) {
   }
 }
 
+async function getAnosDisponiveis(req, res, next) {
+  try {
+    const result = await biomaService.getAnosDisponiveis();
+    return res.status(200).json(result);
+  } catch (error) {
+    return next(error);
+  }
+}
+
 module.exports = {
   listBiomas,
   getBiomaById,
@@ -64,4 +73,5 @@ module.exports = {
   getDistribuicao,
   getEvolucaoMensal,
   getEstatisticas,
+  getAnosDisponiveis,
 };

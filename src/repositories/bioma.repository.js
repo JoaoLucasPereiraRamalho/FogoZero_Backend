@@ -90,6 +90,16 @@ async function findRegistrosMensaisByBiomaId({ biomaId, ano }) {
   });
 }
 
+async function findAnosDisponiveis() {
+  const result = await prisma.$queryRaw`
+    SELECT DISTINCT EXTRACT(YEAR FROM data_registro)::int AS ano
+    FROM registro_queimada
+    WHERE data_registro IS NOT NULL
+    ORDER BY ano DESC
+  `;
+  return result.map((r) => r.ano);
+}
+
 module.exports = {
   findAll,
   findById,
@@ -97,4 +107,5 @@ module.exports = {
   countRegistrosByBiomaId,
   sumFocosAnuaisByBiomaId,
   findRegistrosMensaisByBiomaId,
+  findAnosDisponiveis,
 };

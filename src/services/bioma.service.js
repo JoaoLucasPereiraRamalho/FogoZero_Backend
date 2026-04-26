@@ -146,13 +146,13 @@ function calcularTendencia(porMes) {
   const primeira = focos.slice(0, metade).reduce((a, b) => a + b, 0);
   const segunda = focos.slice(metade).reduce((a, b) => a + b, 0);
 
-  if (primeira === 0 && segunda === 0) return "estavel";
+  if (primeira === 0 && segunda === 0) return "estável";
   if (primeira === 0) return "crescimento";
 
   const diff = ((segunda - primeira) / primeira) * 100;
   if (diff > 5) return "crescimento";
   if (diff < -5) return "queda";
-  return "estavel";
+  return "estável";
 }
 
 async function getDistribuicao(query) {
@@ -281,9 +281,9 @@ async function getEstatisticas(params, query) {
       return {
         bioma: { id: bioma.id, descricao: bioma.descricao },
         ano,
-        maior_registro: null,
-        menor_registro: null,
-        tendencia: null,
+        maior_registro: { mes: "—", total_focos: 0 },
+        menor_registro: { mes: "—", total_focos: 0 },
+        tendencia: "estável",
       };
     }
 
@@ -314,6 +314,11 @@ async function getEstatisticas(params, query) {
   }
 }
 
+async function getAnosDisponiveis() {
+  const anos = await biomaRepository.findAnosDisponiveis();
+  return { anos };
+}
+
 module.exports = {
   listBiomas,
   getBiomaById,
@@ -321,4 +326,5 @@ module.exports = {
   getDistribuicao,
   getEvolucaoMensal,
   getEstatisticas,
+  getAnosDisponiveis,
 };
