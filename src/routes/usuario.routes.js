@@ -12,7 +12,7 @@ const router = express.Router();
 router.get(
   "/",
   authMiddleware,
-  requireRole(["admin"]),
+  requireRole(["administrador"]),
   usuarioController.listAll,
 );
 
