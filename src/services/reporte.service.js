@@ -122,6 +122,7 @@ async function analisarImagemComIA(imagemPath) {
 
   const response = await axios.post(`${iaServiceUrl}/predict`, formData, {
     headers: formData.getHeaders(),
+    timeout: 30000, // 30s — evita travar quando o microserviço está hibernado
   });
 
   return response.data;
@@ -210,12 +211,21 @@ async function create(input, authenticatedUserId) {
     let resultadoIA = null;
 
     if (data.imagem_url) {
-      const imagemPath = await baixarImagem(data.imagem_url);
-
-      resultadoIA = await analisarImagemComIA(imagemPath);
-
-      //deleta o arquivo temporário após a análise para evitar acúmulo de arquivos no servidor
-      fs.unlink(imagemPath, () => {});
+      // Análise de IA é best-effort: se falhar (microserviço hibernado, OOM, timeout),
+      // o reporte ainda é salvo com status_ia padrão (1 = pendente/sem incêndio).
+      try {
+        const imagemPath = await baixarImagem(data.imagem_url);
+        try {
+          resultadoIA = await analisarImagemComIA(imagemPath);
+        } finally {
+          //deleta o arquivo temporário após a análise para evitar acúmulo de arquivos no servidor
+          fs.unlink(imagemPath, () => {});
+        }
+      } catch (err) {
+        console.error(
+          `⚠️ Falha na análise de IA, salvando reporte sem ela: ${err.message}`,
+        );
+      }
     }
 
     let statusIA = 1; // padrão (sem incendio)
