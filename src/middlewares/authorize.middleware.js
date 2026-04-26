@@ -55,7 +55,7 @@ function requireSelfOrAdmin(paramName) {
       return next(new AppError("Identificador de usuario invalido.", 400));
     }
 
-    const isAdmin = String(req.user.tipo).toLowerCase() === "admin";
+    const isAdmin = String(req.user.tipo).toLowerCase() === "administrador";
 
     if (!isAdmin && req.user.userId !== targetId) {
       return next(new AppError("Acesso negado para este recurso.", 403));
