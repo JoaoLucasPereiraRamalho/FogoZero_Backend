@@ -231,7 +231,7 @@ async function create(input, authenticatedUserId) {
       longitude: data.longitude,
       imagem_url: data.imagem_url,
       id_status_analise_ia: statusIA,
-      id_status_analise_admin: data.id_status_analise_admin ?? 1,
+      id_status_analise_admin: data.id_status_analise_admin ?? null,
     });
 
     try {
