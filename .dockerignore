@@ -13,7 +13,6 @@ node_modules
 tests
 
 # Arquivos de desenvolvimento
-prisma.config.ts
 nodemon.json
 
 # Documentação e arquivos avulsos
