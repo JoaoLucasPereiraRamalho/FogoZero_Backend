@@ -233,6 +233,8 @@ async function processarImportacao(importId, autorId) {
 }
 
 module.exports = noticiaController;
+module.exports.processarImportacao = processarImportacao;
+module.exports.importacaoStatus = importacaoStatus;
 
 function extrairCidade(titulo) {
   const cidades = [

@@ -30,10 +30,8 @@ const noticiaDTO = {
       item.content ||
       "Conteúdo indisponível no momento.";
 
-    const imagem_capa =
-      item.media?.content?.url ||
-      item.enclosure?.url ||
-      (item.media && item.media["$"] ? item.media["$"].url : null);
+    // Imagem de capa propositalmente desabilitada na importação automática.
+    const imagem_capa = null;
 
     const fonte_url = item.link || item.guid || null;
     const data_publicacao = item.pubDate ? new Date(item.pubDate) : new Date();
