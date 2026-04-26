@@ -21,6 +21,10 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+app.get("/", (req, res) => {
+  return res.redirect("/api-docs");
+});
+
 app.get("/ping", (req, res) => {
   return res.status(200).json({
     mensagem: "A API do FogoZero MG está no ar! 🚀",
@@ -47,14 +51,5 @@ const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Servidor rodando na porta ${PORT}`);
   console.log(`Acesse: http://localhost:${PORT}/ping`);
-  console.log(`Acesse Rotas de Auth: http://localhost:${PORT}/api/auth`);
-  console.log(`Acesse Rotas de Reporte: http://localhost:${PORT}/api/reportes`);
-  console.log(
-    `Acesse Rotas Educativas: http://localhost:${PORT}/api/educativo`,
-  );
-  console.log(
-    `Acesse Rotas de Municipios: http://localhost:${PORT}/api/municipios`,
-  );
-  console.log(`Acesse Rotas de Biomas: http://localhost:${PORT}/api/biomas`);
   console.log(`Acesse Swagger: http://localhost:${PORT}/api-docs`);
 });
