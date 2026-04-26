@@ -29,30 +29,33 @@ RUN addgroup -S appgroup && adduser -S appuser -G appgroup
 
 WORKDIR /app
 
+# Garante ownership do WORKDIR vazio (operação barata, sem percorrer arquivos)
+RUN chown appuser:appgroup /app
+
+# Troca para usuário não-root ANTES de instalar dependências, assim
+# tudo dentro de node_modules já nasce com o ownership correto
+# (evita um RUN chown -R lento e que duplicaria a imagem).
+USER appuser
+
 # Instala apenas dependências de produção.
 # --ignore-scripts evita que @prisma/client tente rodar "prisma generate"
 # sem o CLI disponível; usamos o cliente já gerado do stage anterior.
-COPY package*.json ./
+COPY --chown=appuser:appgroup package*.json ./
 RUN npm ci --omit=dev --ignore-scripts --no-fund --no-audit
 
 # Copia o Prisma Client gerado no stage anterior
-COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
+COPY --from=builder --chown=appuser:appgroup /app/node_modules/.prisma ./node_modules/.prisma
 
 # CLI do Prisma copiado do builder para permitir execução de migrations
-COPY --from=builder /app/node_modules/prisma ./node_modules/prisma
-COPY --from=builder /app/node_modules/.bin/prisma ./node_modules/.bin/prisma
+COPY --from=builder --chown=appuser:appgroup /app/node_modules/prisma ./node_modules/prisma
+COPY --from=builder --chown=appuser:appgroup /app/node_modules/.bin/prisma ./node_modules/.bin/prisma
 
-# Schema do Prisma é necessário em runtime pelo adapter
-COPY prisma ./prisma
+# Schema do Prisma e config do CLI (datasource.url, seed) são necessários em runtime
+COPY --chown=appuser:appgroup prisma ./prisma
+COPY --chown=appuser:appgroup prisma.config.ts ./
 
 # Código-fonte da aplicação
-COPY src ./src
-
-# Garante que o usuário não-root possa ler/escrever no diretório da aplicação
-# (necessário para o Prisma criar caches em node_modules/@prisma/engines)
-RUN chown -R appuser:appgroup /app
-
-USER appuser
+COPY --chown=appuser:appgroup src ./src
 
 EXPOSE 3000
 
