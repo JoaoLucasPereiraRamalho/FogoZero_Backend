@@ -7,7 +7,6 @@ const importacaoStatus = {};
 
 const noticiaController = {
   async importar(req, res) {
-    console.log("🚀 Rota /importar chamada!");
     const startTime = Date.now();
     const importId = `imp_${Date.now()}`;
 
