@@ -48,6 +48,10 @@ COPY prisma ./prisma
 # Código-fonte da aplicação
 COPY src ./src
 
+# Garante que o usuário não-root possa ler/escrever no diretório da aplicação
+# (necessário para o Prisma criar caches em node_modules/@prisma/engines)
+RUN chown -R appuser:appgroup /app
+
 USER appuser
 
 EXPOSE 3000
